@@ -63,6 +63,9 @@ const Sidebar: React.FC<SidebarProps> = ({
            <button onClick={() => handleNav('STUDY_MATERIAL')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${view === 'STUDY_MATERIAL' ? 'bg-pakGreen-600 text-white' : 'hover:bg-gray-800'}`}>
               <BookIcon className="w-5 h-5" /> {t('studyMaterial')}
            </button>
+           <button onClick={() => handleNav('SYLLABUS')} className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors ${view === 'SYLLABUS' ? 'bg-pakGreen-600 text-white' : 'hover:bg-gray-800'}`}>
+              <BookIcon className="w-5 h-5" /> {t('syllabus')}
+           </button>
         </div>
       </div>
       

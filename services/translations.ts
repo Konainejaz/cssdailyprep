@@ -37,6 +37,10 @@ export const translations = {
     explanation: "Explanation",
     correct: "Correct",
     youChose: "You chose",
+    genderStudiesSyllabus: "Gender Studies Syllabus",
+    syllabus: "Syllabus",
+    optionalSyllabus: "Optional Syllabus",
+    compulsorySyllabus: "Compulsory Syllabus",
   },
   ur: {
     startMockExam: "فرضی امتحان شروع کریں",
@@ -74,5 +78,9 @@ export const translations = {
     explanation: "وضاحت",
     correct: "درست",
     youChose: "آپ نے منتخب کیا",
+    genderStudiesSyllabus: "جینڈر اسٹڈیز نصاب",
+    syllabus: "نصاب",
+    optionalSyllabus: "انتخابی نصاب",
+    compulsorySyllabus: "لازمی نصاب",
   }
 };

@@ -34,7 +34,6 @@ export const STUDY_MATERIALS = [
 ];
 
 export const CSS_RESOURCES = [
-  { id: 'cr-1', title: 'CSS Syllabus 2025', prompt: 'Detailed breakdown of CSS Syllabus 2025 for compulsory and optional subjects.', category: 'Syllabus' },
   { id: 'cr-2', title: 'Past Papers Analysis', prompt: 'Analyze the trends of CSS Past Papers from 2018-2024 for Essay and Current Affairs.', category: 'Past Papers' },
   { id: 'cr-3', title: 'Interview Tips', prompt: 'Provide expert tips for the CSS Viva Voce/Psychological assessment.', category: 'Guidance' },
   { id: 'cr-4', title: 'Subject Selection Guide', prompt: 'Guide on how to select optional subjects for CSS based on scoring trends.', category: 'Guidance' },

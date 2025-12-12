@@ -9,7 +9,11 @@ import Sidebar from './components/Sidebar';
 import QuizView from './components/QuizView';
 import StudyMaterialView from './components/StudyMaterialView';
 import CssResourcesView from './components/CssResourcesView';
+import SyllabusHub from './components/SyllabusHub';
 import ResourceDetailView from './components/ResourceDetailView';
+import GenderStudiesSyllabus from './components/GenderStudiesSyllabus';
+import InterviewPreparation from './components/InterviewPreparation';
+import SubjectSelectionGuide from './components/SubjectSelectionGuide';
 import { ArticleSkeleton } from './components/SkeletonLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -123,7 +127,7 @@ const InnerApp: React.FC = () => {
   );
 
   return (
-    <div className="flex h-screen bg-gray-100 overflow-hidden">
+    <div className="flex w-full h-screen supports-[height:100dvh]:h-[100dvh] bg-gray-100 overflow-hidden">
       <Sidebar 
         view={view} 
         onViewChange={setView} 
@@ -247,11 +251,33 @@ const InnerApp: React.FC = () => {
           )}
 
           {view === 'STUDY_MATERIAL' && (
-            <StudyMaterialView onSelect={handleResourceRequest} />
+            <StudyMaterialView 
+              onSelect={handleResourceRequest} 
+              onOpenSyllabus={() => setView('SYLLABUS')} 
+            />
           )}
 
           {view === 'CSS_RESOURCES' && (
-            <CssResourcesView onSelect={handleResourceRequest} />
+            <CssResourcesView 
+              onSelect={handleResourceRequest} 
+              onOpenInterviewPrep={() => setView('INTERVIEW_PREP')}
+              onOpenSubjectSelection={() => setView('SUBJECT_SELECTION')}
+            />
+          )}
+
+          {view === 'INTERVIEW_PREP' && (
+            <InterviewPreparation onBack={() => setView('CSS_RESOURCES')} />
+          )}
+
+          {view === 'SUBJECT_SELECTION' && (
+            <SubjectSelectionGuide onBack={() => setView('CSS_RESOURCES')} />
+          )}
+
+          {view === 'SYLLABUS' && (
+            <SyllabusHub 
+              onBack={() => setView('STUDY_MATERIAL')} 
+              onOpenGenderStudies={() => setView('GENDER_SYLLABUS')} 
+            />
           )}
 
           {view === 'RESOURCE_DETAIL' && resourceDetail && (
@@ -267,13 +293,23 @@ const InnerApp: React.FC = () => {
             />
           )}
 
+          {view === 'GENDER_SYLLABUS' && (
+            <GenderStudiesSyllabus
+              onBack={() => setView('CSS_RESOURCES')}
+              onSaveNote={(t, c) => {
+                setNoteToEdit({ title: t, content: c, subject: Subject.GENDER_STUDIES });
+                setView('NOTE_EDIT');
+              }}
+            />
+          )}
+
           {view === 'RESEARCH' && (
              <div className="h-full flex flex-col bg-gray-50">
-               <div className="px-6 py-8 bg-white shadow-sm border-b border-gray-100">
+               <div className="px-4 md:px-6 py-6 md:py-8 bg-white shadow-sm border-b border-gray-100">
                   <h1 className="text-2xl font-bold font-serif mb-2">{t('researchLab')}</h1>
-                  <div className="relative max-w-3xl">
+                  <div className="relative w-full max-w-5xl mx-auto md:mx-0">
                      <input 
-                       className="w-full bg-gray-100 border-none rounded-xl py-4 pl-12 pr-4 text-lg focus:ring-2 focus:ring-pakGreen-500 transition-all"
+                       className="w-full bg-gray-100 border-none rounded-xl py-4 pl-12 pr-4 text-base md:text-lg focus:ring-2 focus:ring-pakGreen-500 transition-all"
                        placeholder={t('searchPlaceholder')}
                        value={researchQueryInput}
                        onChange={e => setResearchQueryInput(e.target.value)}
@@ -289,9 +325,9 @@ const InnerApp: React.FC = () => {
                      </button>
                   </div>
                </div>
-               <div className="flex-1 overflow-y-auto px-6 py-8">
+               <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8">
                   {researchResult ? (
-                     <div className="max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in">
+                     <div className="w-full max-w-5xl mx-auto md:mx-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in">
                         <div className="flex justify-between items-start mb-6">
                            <h2 className="text-2xl font-serif font-bold text-gray-900">{researchResult.query}</h2>
                            <button onClick={() => {

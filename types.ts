@@ -61,7 +61,7 @@ export interface QuizSession {
   timeSpent: number; // seconds
 }
 
-export type ViewState = 'FEED' | 'NOTE_LIST' | 'NOTE_EDIT' | 'ARTICLE_DETAIL' | 'RESEARCH' | 'QUIZ' | 'QUIZ_SESSION' | 'STUDY_MATERIAL' | 'CSS_RESOURCES' | 'RESOURCE_DETAIL';
+export type ViewState = 'FEED' | 'NOTE_LIST' | 'NOTE_EDIT' | 'ARTICLE_DETAIL' | 'RESEARCH' | 'QUIZ' | 'QUIZ_SESSION' | 'STUDY_MATERIAL' | 'SYLLABUS' | 'CSS_RESOURCES' | 'RESOURCE_DETAIL' | 'GENDER_SYLLABUS' | 'INTERVIEW_PREP' | 'SUBJECT_SELECTION';
 
 export interface SidebarItem {
   title: string;

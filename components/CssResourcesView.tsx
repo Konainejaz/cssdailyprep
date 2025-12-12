@@ -5,9 +5,11 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 interface Props {
   onSelect: (prompt: string, title: string, context?: string) => void;
+  onOpenInterviewPrep: () => void;
+  onOpenSubjectSelection: () => void;
 }
 
-const CssResourcesView: React.FC<Props> = ({ onSelect }) => {
+const CssResourcesView: React.FC<Props> = ({ onSelect, onOpenInterviewPrep, onOpenSubjectSelection }) => {
   const { t } = useLanguage();
   const [search, setSearch] = useState('');
 
@@ -15,6 +17,16 @@ const CssResourcesView: React.FC<Props> = ({ onSelect }) => {
     m.title.toLowerCase().includes(search.toLowerCase()) || 
     m.category.toLowerCase().includes(search.toLowerCase())
   );
+
+  const handleClick = (item: typeof CSS_RESOURCES[0]) => {
+    if (item.id === 'cr-3') {
+      onOpenInterviewPrep();
+    } else if (item.id === 'cr-4') {
+      onOpenSubjectSelection();
+    } else {
+      onSelect(item.prompt, item.title, item.category);
+    }
+  };
 
   return (
     <div className="h-full flex flex-col bg-white">
@@ -35,7 +47,7 @@ const CssResourcesView: React.FC<Props> = ({ onSelect }) => {
           {filtered.map(item => (
             <div 
               key={item.id} 
-              onClick={() => onSelect(item.prompt, item.title, item.category)}
+              onClick={() => handleClick(item)}
               className="flex items-center p-4 rounded-xl border border-gray-100 hover:border-pakGreen-200 hover:bg-pakGreen-50/30 transition-all cursor-pointer group"
             >
               <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 group-hover:bg-pakGreen-100 group-hover:text-pakGreen-600 transition-colors shrink-0">

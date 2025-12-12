@@ -5,9 +5,10 @@ import { useLanguage } from '../contexts/LanguageContext';
 
 interface Props {
   onSelect: (prompt: string, title: string, context?: string) => void;
+  onOpenSyllabus?: () => void;
 }
 
-const StudyMaterialView: React.FC<Props> = ({ onSelect }) => {
+const StudyMaterialView: React.FC<Props> = ({ onSelect, onOpenSyllabus }) => {
   const { t } = useLanguage();
   const [search, setSearch] = useState('');
   const [completed, setCompleted] = useState<string[]>([]);
@@ -44,6 +45,16 @@ const StudyMaterialView: React.FC<Props> = ({ onSelect }) => {
               onChange={e => setSearch(e.target.value)}
            />
         </div>
+        {onOpenSyllabus && (
+          <div className="mt-4">
+            <button 
+              onClick={onOpenSyllabus}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pakGreen-600 text-white text-sm font-bold shadow hover:bg-pakGreen-700"
+            >
+              {t('syllabus')}
+            </button>
+          </div>
+        )}
       </div>
       <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
