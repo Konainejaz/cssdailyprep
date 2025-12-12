@@ -147,7 +147,7 @@ const InnerApp: React.FC = () => {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Mobile Header */}
-        <header className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 z-20">
+        <header className="md:hidden bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between shrink-0 z-20">
            <button onClick={() => setMobileMenuOpen(true)} className="text-gray-700 p-1">
              <MenuIcon className="w-6 h-6" />
            </button>
@@ -160,7 +160,7 @@ const InnerApp: React.FC = () => {
           
           {view === 'FEED' && (
             <div className="h-full flex flex-col">
-              <div className="px-6 pt-6 md:pt-8 pb-2">
+              <div className="px-6 pt-4 md:pt-8 pb-2">
                  <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif mb-1">{t('dailyIntelligence')}</h1>
                  <p className="text-gray-500 text-sm md:text-base mb-6">{t('curatedAnalysis')}</p>
                  {renderSubjectSelector()}
