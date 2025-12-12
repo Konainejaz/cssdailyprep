@@ -172,12 +172,12 @@ const InnerApp: React.FC = () => {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Mobile Header */}
-        <header className="md:hidden bg-white border-b border-gray-200 px-4 py-2 flex items-center justify-between shrink-0 z-20">
-           <button onClick={() => setMobileMenuOpen(true)} className="text-gray-700 p-1">
+        <header className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 z-20 shadow-sm transition-all duration-300">
+           <button onClick={() => setMobileMenuOpen(true)} className="text-gray-700 p-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors">
              <MenuIcon className="w-6 h-6" />
            </button>
-           <span className="font-bold text-lg font-serif">CSS<span className="text-pakGreen-600">Prep</span></span>
-           <div className="w-8"></div> {/* Spacer for alignment */}
+           <span className="font-bold text-xl sm:text-2xl font-serif tracking-tight transition-all duration-300">CSS<span className="text-pakGreen-600">Prep</span></span>
+           <div className="w-10"></div> {/* Spacer for alignment */}
         </header>
 
         {/* View Content */}
@@ -331,10 +331,10 @@ const InnerApp: React.FC = () => {
           {view === 'RESEARCH' && (
              <div className="h-full flex flex-col bg-gray-50">
                <div className="px-4 md:px-6 py-6 md:py-8 bg-white shadow-sm border-b border-gray-100">
-                  <h1 className="text-2xl font-bold font-serif mb-2">{t('researchLab')}</h1>
-                  <div className="relative w-full max-w-5xl mx-auto md:mx-0">
+                  <h1 className="text-2xl font-bold font-serif mb-2 text-center md:text-left max-w-5xl mx-auto">{t('researchLab')}</h1>
+                  <div className="relative w-full max-w-5xl mx-auto">
                      <input 
-                       className="w-full bg-gray-100 border-none rounded-xl py-4 pl-12 pr-4 text-base md:text-lg focus:ring-2 focus:ring-pakGreen-500 transition-all"
+                       className="w-full bg-gray-100 border-none rounded-xl py-4 pl-12 pr-28 text-[16px] md:text-lg focus:ring-2 focus:ring-pakGreen-500 transition-all shadow-sm"
                        placeholder={t('searchPlaceholder')}
                        value={researchQueryInput}
                        onChange={e => setResearchQueryInput(e.target.value)}
@@ -344,7 +344,7 @@ const InnerApp: React.FC = () => {
                      <button 
                        onClick={() => handleResearchRequest(researchQueryInput, searchQuery)}
                        disabled={isResearching}
-                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-pakGreen-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-pakGreen-700 disabled:opacity-50"
+                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-pakGreen-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-pakGreen-700 disabled:opacity-50 shadow-md transition-transform active:scale-95"
                      >
                        {isResearching ? t('searching') : t('search')}
                      </button>
@@ -352,28 +352,28 @@ const InnerApp: React.FC = () => {
                </div>
                <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8">
                   {researchResult ? (
-                     <div className="w-full max-w-5xl mx-auto md:mx-0 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in">
-                        <div className="flex justify-between items-start mb-6">
-                           <h2 className="text-2xl font-serif font-bold text-gray-900">{researchResult.query}</h2>
+                     <div className="w-full max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in">
+                        <div className="flex justify-between items-start mb-6 border-b border-gray-100 pb-4">
+                           <h2 className="text-3xl font-serif font-bold text-gray-900 leading-tight">{researchResult.query}</h2>
                            <button onClick={() => {
                               setNoteToEdit({ title: researchResult.query, content: researchResult.content });
                               setView('NOTE_EDIT');
-                           }} className="text-pakGreen-600 hover:bg-pakGreen-50 p-2 rounded-full">
+                           }} className="text-pakGreen-600 hover:bg-pakGreen-50 p-2 rounded-full transition-colors" title="Save to Notes">
                               <PlusIcon className="w-6 h-6" />
                            </button>
                         </div>
-                        <div className="prose prose-pakGreen max-w-none text-gray-700 font-serif leading-relaxed mb-8">
+                        <div className="prose prose-lg prose-pakGreen max-w-none text-gray-700 font-serif leading-relaxed mb-8 prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-a:text-pakGreen-600 prose-a:no-underline hover:prose-a:underline prose-li:marker:text-pakGreen-500">
                            <ReactMarkdown>{researchResult.content}</ReactMarkdown>
                         </div>
                         {researchResult.sources.length > 0 && (
-                           <div className="bg-gray-50 rounded-xl p-6">
-                              <h4 className="text-xs font-bold text-gray-500 uppercase mb-4">Cited Sources</h4>
-                              <ul className="space-y-2">
+                           <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
+                              <h4 className="text-xs font-bold text-gray-500 uppercase mb-4 tracking-wider">Cited Sources</h4>
+                              <ul className="space-y-3">
                                  {researchResult.sources.map((src, i) => (
                                     <li key={i}>
-                                       <a href={src.url} target="_blank" rel="noreferrer" className="text-sm text-pakGreen-700 hover:underline flex items-center gap-2">
-                                          <span className="w-4 h-4 bg-pakGreen-100 rounded-full flex items-center justify-center text-[10px] font-bold text-pakGreen-700">{i+1}</span>
-                                          {src.title}
+                                       <a href={src.url} target="_blank" rel="noreferrer" className="text-sm text-pakGreen-700 hover:underline flex items-start gap-3 group">
+                                          <span className="w-5 h-5 bg-pakGreen-100 rounded-full flex items-center justify-center text-[10px] font-bold text-pakGreen-700 shrink-0 group-hover:bg-pakGreen-200 transition-colors">{i+1}</span>
+                                          <span className="leading-snug">{src.title}</span>
                                        </a>
                                     </li>
                                  ))}
@@ -383,8 +383,8 @@ const InnerApp: React.FC = () => {
                      </div>
                   ) : !isResearching && (
                      <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
-                        <GlobeIcon className="w-20 h-20 mb-4 stroke-1" />
-                        <p className="text-lg">Enter a topic to generate a comprehensive analysis.</p>
+                        <GlobeIcon className="w-24 h-24 mb-6 stroke-1 text-gray-300" />
+                        <p className="text-xl font-medium text-gray-500 text-center max-w-md">Enter a topic above to generate a comprehensive analysis tailored for CSS aspirants.</p>
                      </div>
                   )}
                </div>
@@ -393,34 +393,35 @@ const InnerApp: React.FC = () => {
 
           {view === 'NOTE_LIST' && (
              <div className="h-full flex flex-col bg-gray-50">
-               <div className="px-6 py-8 bg-white border-b border-gray-100">
+               <div className="px-4 md:px-6 py-6 md:py-8 bg-white border-b border-gray-100">
                   <div className="flex justify-between items-center mb-6 max-w-5xl mx-auto">
-                     <h1 className="text-3xl font-bold font-serif text-gray-900">{t('myNotes')}</h1>
-                     <button onClick={() => { setNoteToEdit({ title: '', content: '' }); setView('NOTE_EDIT'); }} className="bg-pakGreen-600 text-white flex items-center gap-2 px-5 py-2.5 rounded-full font-bold shadow-lg shadow-pakGreen-200 hover:bg-pakGreen-700 transition">
-                        <PlusIcon className="w-5 h-5" /> {t('newNote')}
+                     <h1 className="text-2xl md:text-3xl font-bold font-serif text-gray-900">{t('myNotes')}</h1>
+                     <button onClick={() => { setNoteToEdit({ title: '', content: '' }); setView('NOTE_EDIT'); }} className="bg-pakGreen-600 text-white flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full font-bold shadow-lg shadow-pakGreen-200 hover:bg-pakGreen-700 transition active:scale-95">
+                        <PlusIcon className="w-5 h-5" /> 
+                        <span className="text-sm md:text-base">{t('newNote')}</span>
                      </button>
                   </div>
                   <div className="max-w-5xl mx-auto relative">
                      <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
                      <input 
-                        className="w-full bg-gray-100 border-none rounded-xl py-3 pl-12 pr-4 text-base focus:ring-2 focus:ring-pakGreen-500"
+                        className="w-full bg-gray-100 border-none rounded-xl py-3 pl-12 pr-4 text-[16px] md:text-base focus:ring-2 focus:ring-pakGreen-500 shadow-sm"
                         placeholder={t('searchPlaceholder')}
                         value={searchQuery}
                         onChange={e => setSearchQuery(e.target.value)}
                      />
                   </div>
                </div>
-               <div className="flex-1 overflow-y-auto px-6 py-8">
+               <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8">
                   <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                      {notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
                         notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())).map(note => (
-                           <div key={note.id} onClick={() => { setNoteToEdit(note); setView('NOTE_EDIT'); }} className="bg-white p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group h-64 flex flex-col">
+                           <div key={note.id} onClick={() => { setNoteToEdit(note); setView('NOTE_EDIT'); }} className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group h-60 md:h-64 flex flex-col active:scale-[0.99] transition-transform">
                               <div className="flex justify-between items-start mb-2">
                                  {note.subject ? <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{note.subject}</span> : <span></span>}
-                                 <span className="text-xs text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
+                                 <span className="text-[10px] md:text-xs text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
                               </div>
-                              <h3 className="font-bold text-lg text-gray-800 mb-3 line-clamp-2 font-serif group-hover:text-pakGreen-700 transition-colors">{note.title}</h3>
-                              <p className="text-sm text-gray-500 line-clamp-4 font-serif leading-relaxed flex-1">
+                              <h3 className="font-bold text-lg md:text-xl text-gray-800 mb-2 md:mb-3 line-clamp-2 font-serif group-hover:text-pakGreen-700 transition-colors">{note.title}</h3>
+                              <p className="text-sm md:text-base text-gray-500 line-clamp-4 font-serif leading-relaxed flex-1">
                                  {note.content.replace(/[#*`_]/g, '')}
                               </p>
                            </div>
@@ -445,23 +446,23 @@ const InnerApp: React.FC = () => {
 
         {/* Mobile Bottom Nav */}
         {!['NOTE_EDIT', 'QUIZ'].includes(view) && (
-          <nav className="md:hidden bg-white border-t border-gray-200 flex justify-around items-center px-4 py-2 pb-safe z-20">
-             <button onClick={() => setView('FEED')} className={`flex flex-col items-center p-2 rounded-lg ${view === 'FEED' ? 'text-pakGreen-600' : 'text-gray-400'}`}>
-                <BookIcon className="w-6 h-6" />
-                <span className="text-[10px] font-medium mt-1">Feed</span>
+          <nav className="md:hidden bg-white border-t border-gray-200 flex justify-around items-center px-2 sm:px-6 py-2 pb-[env(safe-area-inset-bottom,20px)] z-20 min-h-[72px] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-all duration-300">
+             <button onClick={() => setView('FEED')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'FEED' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+                <BookIcon className="w-6 h-6 mb-1" />
+                <span className="text-[11px] sm:text-xs font-medium">Feed</span>
              </button>
-             <button onClick={() => setView('QUIZ')} className={`flex flex-col items-center p-2 rounded-lg ${view === 'QUIZ' ? 'text-pakGreen-600' : 'text-gray-400'}`}>
-                <TrophyIcon className="w-6 h-6" />
-                <span className="text-[10px] font-medium mt-1">Mock</span>
+             <button onClick={() => setView('QUIZ')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'QUIZ' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+                <TrophyIcon className="w-6 h-6 mb-1" />
+                <span className="text-[11px] sm:text-xs font-medium">Mock</span>
              </button>
-             <button onClick={() => setView('RESEARCH')} className={`flex flex-col items-center p-2 rounded-lg ${view === 'RESEARCH' ? 'text-pakGreen-600' : 'text-gray-400'}`}>
-                <GlobeIcon className="w-6 h-6" />
-                <span className="text-[10px] font-medium mt-1">Lab</span>
-             </button>
-             <button onClick={() => setView('NOTE_LIST')} className={`flex flex-col items-center p-2 rounded-lg ${view === 'NOTE_LIST' ? 'text-pakGreen-600' : 'text-gray-400'}`}>
-                <NoteIcon className="w-6 h-6" />
-                <span className="text-[10px] font-medium mt-1">Notes</span>
-             </button>
+             <button onClick={() => setView('RESEARCH')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'RESEARCH' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+                 <GlobeIcon className="w-6 h-6 mb-1" />
+                 <span className="text-[11px] sm:text-xs font-medium">Lab</span>
+               </button>
+               <button onClick={() => setView('NOTE_LIST')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'NOTE_LIST' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+                 <NoteIcon className="w-6 h-6 mb-1" />
+                 <span className="text-[11px] sm:text-xs font-medium">Notes</span>
+               </button>
           </nav>
         )}
       </div>

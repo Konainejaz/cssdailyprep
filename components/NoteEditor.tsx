@@ -110,7 +110,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ initialNote, onClose, onSave })
             <button 
               onClick={handleSave}
               disabled={!title.trim()}
-              className="flex items-center gap-2 px-4 py-1.5 bg-pakGreen-600 text-white hover:bg-pakGreen-700 rounded-lg shadow-lg shadow-pakGreen-200 disabled:opacity-50 disabled:shadow-none transition-all"
+              className="flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-1.5 bg-pakGreen-600 text-white hover:bg-pakGreen-700 rounded-lg shadow-lg shadow-pakGreen-200 disabled:opacity-50 disabled:shadow-none transition-all active:scale-95"
             >
               <SaveIcon className="w-5 h-5" />
               <span className="hidden sm:inline text-sm font-bold">Save Note</span>
@@ -127,7 +127,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ initialNote, onClose, onSave })
         {/* Editor Body */}
         <div className="flex-1 overflow-y-auto bg-white flex flex-col relative">
            {/* Metadata Bar */}
-           <div className="px-6 pt-6 pb-2">
+           <div className="px-4 md:px-6 pt-4 md:pt-6 pb-2">
               <select 
                 value={subject} 
                 onChange={(e) => setSubject(e.target.value as Subject)}
@@ -147,32 +147,32 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ initialNote, onClose, onSave })
                   adjustTitleHeight(e.target);
                 }}
                 rows={1}
-                className="w-full text-3xl font-bold text-gray-900 placeholder-gray-300 border-none focus:ring-0 px-0 mb-4 font-serif leading-tight bg-transparent resize-none overflow-hidden"
-                style={{ minHeight: '3rem' }}
+                className="w-full text-2xl md:text-3xl font-bold text-gray-900 placeholder-gray-300 border-none focus:ring-0 px-0 mb-2 md:mb-4 font-serif leading-tight bg-transparent resize-none overflow-hidden"
+                style={{ minHeight: '2.5rem' }}
               />
            </div>
 
            {/* Toolbar */}
-           <div className="sticky top-0 z-10 bg-white/95 backdrop-blur px-6 py-2 border-y border-gray-100 flex gap-1 shadow-sm">
-              <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-gray-100 rounded text-gray-600 transition-colors" title="Bold">
+           <div className="sticky top-0 z-10 bg-white/95 backdrop-blur px-4 md:px-6 py-2 border-y border-gray-100 flex gap-1 shadow-sm overflow-x-auto no-scrollbar">
+              <button onClick={() => insertText('**', '**')} className="p-2 hover:bg-gray-100 rounded text-gray-600 transition-colors shrink-0" title="Bold">
                 <BoldIcon className="w-5 h-5" />
               </button>
-              <button onClick={() => insertText('_', '_')} className="p-2 hover:bg-gray-100 rounded text-gray-600 transition-colors" title="Italic">
+              <button onClick={() => insertText('_', '_')} className="p-2 hover:bg-gray-100 rounded text-gray-600 transition-colors shrink-0" title="Italic">
                 <ItalicIcon className="w-5 h-5" />
               </button>
-              <button onClick={() => insertText('\n- ')} className="p-2 hover:bg-gray-100 rounded text-gray-600 transition-colors" title="List">
+              <button onClick={() => insertText('\n- ')} className="p-2 hover:bg-gray-100 rounded text-gray-600 transition-colors shrink-0" title="List">
                 <ListIcon className="w-5 h-5" />
               </button>
            </div>
 
-           <div className="flex-1 px-6 py-4">
+           <div className="flex-1 px-4 md:px-6 py-4">
               <textarea
                 ref={textareaRef}
                 id="note-content"
                 placeholder="Start writing your thoughts..."
                 value={content}
                 onChange={(e) => setContent(e.target.value)}
-                className="w-full h-full min-h-[400px] resize-none text-base md:text-lg text-gray-700 leading-relaxed placeholder-gray-300 border-none focus:ring-0 px-0 font-serif bg-transparent"
+                className="w-full h-full min-h-[400px] resize-none text-[16px] md:text-lg text-gray-700 leading-relaxed placeholder-gray-300 border-none focus:ring-0 px-0 font-serif bg-transparent"
               />
            </div>
         </div>
