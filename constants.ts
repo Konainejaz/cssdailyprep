@@ -1,14 +1,24 @@
 import { Subject } from './types';
 
-export const SUBJECTS_LIST = [
+export const COMPULSORY_SUBJECTS = [
+  Subject.ESSAY,
   Subject.PAK_AFFAIRS,
-  Subject.FOREIGN_AFFAIRS,
-  Subject.INT_RELATIONS,
   Subject.CURRENT_AFFAIRS,
+  Subject.ISLAMIAT
+];
+
+export const OPTIONAL_SUBJECTS = [
+  Subject.INT_RELATIONS,
   Subject.POLITICAL_SCIENCE,
   Subject.GENDER_STUDIES,
-  Subject.ESSAY,
-  Subject.ISLAMIAT
+  Subject.FOREIGN_AFFAIRS
+];
+
+export const SUBJECTS_LIST = [
+  ...COMPULSORY_SUBJECTS,
+  ...OPTIONAL_SUBJECTS,
+  Subject.ALL_COMPULSORY,
+  Subject.ALL_OPTIONAL
 ];
 
 // Fallback data in case API fails or for initial state

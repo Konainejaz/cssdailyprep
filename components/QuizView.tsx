@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Subject, Difficulty, QuizQuestion } from '../types';
 import { generateQuiz } from '../services/groqService';
+import { markQuestionsAsSeen } from '../services/storageService';
+import { SUBJECTS_LIST } from '../constants';
 import { 
   TrophyIcon, ClockIcon, CheckIcon, CrossIcon, PlusIcon, 
   CrossIcon as CloseIcon, ShareIcon, PauseIcon, PlayIcon 
@@ -75,6 +77,9 @@ const QuizView: React.FC<QuizViewProps> = ({ onExit, onSaveNote }) => {
     setScore(calculatedScore);
     setStep('RESULT');
 
+    // Mark questions as seen to avoid repetition in future
+    markQuestionsAsSeen(questions);
+
     // Save analytics
     const result = {
       date: new Date().toISOString(),
@@ -117,7 +122,7 @@ const QuizView: React.FC<QuizViewProps> = ({ onExit, onSaveNote }) => {
               value={subject}
               onChange={(e) => setSubject(e.target.value as Subject)}
             >
-              {Object.values(Subject).map(s => <option key={s} value={s}>{s}</option>)}
+              {SUBJECTS_LIST.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
 
@@ -247,7 +252,7 @@ const QuizView: React.FC<QuizViewProps> = ({ onExit, onSaveNote }) => {
           </div>
 
           {/* Footer */}
-          <div className="p-4 md:p-6 border-t border-gray-100 bg-gray-50 flex justify-end shrink-0">
+          <div className="p-4 md:p-6 pb-8 md:pb-6 border-t border-gray-100 bg-gray-50 flex justify-end shrink-0 z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <button
               onClick={handleNext}
               disabled={!isAnswered}
@@ -312,7 +317,7 @@ const QuizView: React.FC<QuizViewProps> = ({ onExit, onSaveNote }) => {
             </div>
           </div>
           
-          <div className="p-6 border-t border-gray-100 bg-white">
+          <div className="p-6 pb-8 md:pb-6 border-t border-gray-100 bg-white z-10 relative shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]">
             <button onClick={onExit} className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-colors">
               {t('returnToDashboard')}
             </button>

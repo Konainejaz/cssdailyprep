@@ -1,5 +1,7 @@
 import Groq from 'groq-sdk';
 import { Subject, Article, ResearchResult, QuizQuestion, Difficulty } from '../types';
+import { getQuestionBank, saveQuestionsToBank, getSeenQuestions } from './storageService';
+import { COMPULSORY_SUBJECTS, OPTIONAL_SUBJECTS } from '../constants';
 
 // Initialize Groq client
 // Note: In a production environment, use environment variables and a backend proxy to secure your API key.
@@ -112,14 +114,49 @@ export const fetchDailyArticles = async (subject: Subject, count: number = 6): P
   }
 };
 export const generateQuiz = async (subject: Subject, difficulty: Difficulty, count: number = 10): Promise<QuizQuestion[]> => {
+  // 1. Determine target subjects for filtering/generation
+  let targetSubjects: string[] = [];
+  if (subject === Subject.ALL_COMPULSORY) {
+    targetSubjects = COMPULSORY_SUBJECTS;
+  } else if (subject === Subject.ALL_OPTIONAL) {
+    targetSubjects = OPTIONAL_SUBJECTS;
+  } else {
+    targetSubjects = [subject];
+  }
+
+  // 2. Try to fetch from Bank
+  const bank = getQuestionBank();
+  const seen = new Set(getSeenQuestions());
+  
+  // Find valid questions from bank: match subject, match difficulty, not seen
+  // Note: We check if q.subject is in targetSubjects. If q.subject is undefined, we skip it for safety unless we're in a lenient mode.
+  const validFromBank = bank.filter(q => 
+    (q.subject && targetSubjects.includes(q.subject)) && 
+    q.difficulty === difficulty && 
+    !seen.has(q.question)
+  );
+  
+  // Shuffle and pick
+  const shuffledBank = validFromBank.sort(() => 0.5 - Math.random());
+  const selectedFromBank = shuffledBank.slice(0, count);
+  
+  if (selectedFromBank.length >= count) {
+    return selectedFromBank;
+  }
+  
+  // 3. Generate remaining needed
+  const needed = count - selectedFromBank.length;
+  
+  const promptSubject = subject === Subject.ALL_COMPULSORY ? "Compulsory Subjects (Essay, Pak Affairs, Current Affairs, Islamiat)" :
+                        subject === Subject.ALL_OPTIONAL ? "Optional Subjects (IR, Pol Science, Gender Studies)" :
+                        subject;
+
   const prompt = `
-    Create a Mock Exam (Quiz) of ${count} Multiple Choice Questions (MCQs) for the CSS subject: "${subject}".
+    Create a Mock Exam (Quiz) of ${needed} Multiple Choice Questions (MCQs) for the CSS subject: "${promptSubject}".
     Difficulty Level: ${difficulty}.
     
-    Questions should test:
-    - Critical concepts
-    - Dates and Events (if history/affairs)
-    - Theoretical frameworks (if science/IR)
+    Questions should be RANDOM and diverse.
+    ${subject === Subject.ALL_COMPULSORY || subject === Subject.ALL_OPTIONAL ? "Ensure a mix of questions from the different included subjects." : ""}
     
     Return a strict JSON object with a single key "questions" containing an array of question objects.
     Each question object must have:
@@ -128,6 +165,7 @@ export const generateQuiz = async (subject: Subject, difficulty: Difficulty, cou
     - options (array of 4 strings)
     - correctAnswerIndex (integer 0-3)
     - explanation (string)
+    - subject (string, the specific subject this question belongs to. e.g. "Pak Affairs")
   `;
 
   try {
@@ -139,10 +177,26 @@ export const generateQuiz = async (subject: Subject, difficulty: Difficulty, cou
 
     const responseText = completion.choices[0]?.message?.content || "{\"questions\": []}";
     const data = JSON.parse(responseText);
-    return data.questions || [];
+    let generatedQuestions: QuizQuestion[] = data.questions || [];
+    
+    // Post-process: Add metadata if missing
+    generatedQuestions = generatedQuestions.map((q, idx) => ({
+      ...q,
+      subject: q.subject || (targetSubjects.length === 1 ? targetSubjects[0] : subject), // Fallback
+      difficulty: difficulty
+    }));
+    
+    // Filter out any that might be in seen list (unlikely but possible)
+    generatedQuestions = generatedQuestions.filter(q => !seen.has(q.question));
+    
+    // Save to bank
+    saveQuestionsToBank(generatedQuestions);
+    
+    return [...selectedFromBank, ...generatedQuestions];
+    
   } catch (error) {
     console.error("Groq API Error (generateQuiz):", error);
-    return [];
+    return selectedFromBank; // Return what we have
   }
 };
 export const researchTopic = async (query: string): Promise<ResearchResult | null> => {

@@ -8,7 +8,9 @@ export enum Subject {
   POLITICAL_SCIENCE = "Political Science",
   ESSAY = "English Essay",
   CURRENT_AFFAIRS = "Current Affairs",
-  ISLAMIAT = "Islamiat"
+  ISLAMIAT = "Islamiat",
+  ALL_COMPULSORY = "All Compulsory Subjects",
+  ALL_OPTIONAL = "All Optional Subjects"
 }
 
 export interface Article {
@@ -51,6 +53,8 @@ export interface QuizQuestion {
   options: string[];
   correctAnswerIndex: number; // 0-3
   explanation: string;
+  subject?: string;
+  difficulty?: string;
 }
 
 export interface QuizSession {
