@@ -21,6 +21,7 @@ import SubjectSelectionGuide from './components/SubjectSelectionGuide';
 import ResearchCenter from './components/ResearchCenter';
 import { ArticleSkeleton } from './components/SkeletonLoader';
 import ErrorBoundary from './components/ErrorBoundary';
+import SplashScreen from './components/SplashScreen';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { 
   BookIcon, NoteIcon, PlusIcon, ChevronLeftIcon, SearchIcon, ShareIcon, 
@@ -63,10 +64,18 @@ const InnerApp: React.FC = () => {
   // Sidebar State
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [streak, setStreak] = useState<StreakData>({ count: 0, lastVisitDate: '' });
+  const [showSplash, setShowSplash] = useState(false);
 
   const STORAGE_KEY = 'cssprep:app_state';
 
   // --- Effects ---
+  useEffect(() => {
+    // Check if mobile
+    if (window.innerWidth < 768) {
+      setShowSplash(true);
+    }
+  }, []);
+
   useEffect(() => { 
     // Load notes from storage on mount
     const savedNotes = getNotes();
@@ -211,6 +220,7 @@ const InnerApp: React.FC = () => {
 
   return (
     <div className="flex w-full h-screen supports-[height:100dvh]:h-[100dvh] bg-gray-100 overflow-hidden">
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <Sidebar 
         view={view} 
         onViewChange={setView} 
