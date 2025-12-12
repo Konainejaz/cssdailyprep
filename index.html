@@ -71,7 +71,8 @@
       }
       
       body {
-        overscroll-behavior-y: none; /* Prevent pull-to-refresh on mobile */
+        overscroll-behavior-y: auto;
+        margin: 0;
       }
     </style>
   <script type="importmap">
@@ -86,8 +87,8 @@
 }
 </script>
 </head>
-  <body class="bg-gray-50 text-gray-900 antialiased selection:bg-pakGreen-200 selection:text-pakGreen-900 overflow-hidden h-screen">
-    <div id="root" class="h-full"></div>
-  <script type="module" src="/index.tsx"></script>
-</body>
-</html>
+  <body class="bg-gray-50 text-gray-900 antialiased selection:bg-pakGreen-200 selection:text-pakGreen-900">
+    <div id="root" class="min-h-screen"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+  </html>

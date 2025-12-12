@@ -54,11 +54,29 @@ const InnerApp: React.FC = () => {
   // Sidebar State
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
+  const STORAGE_KEY = 'cssprep:app_state';
+
   // --- Effects ---
   useEffect(() => { 
     // Load notes from storage on mount
     const savedNotes = getNotes();
     setNotes(savedNotes);
+  }, []);
+
+  useEffect(() => {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      try {
+        const s = JSON.parse(raw);
+        if (s.view) setView(s.view as ViewState);
+        if (s.activeSubject) setActiveSubject(s.activeSubject as Subject);
+        if (s.selectedArticle) setSelectedArticle(s.selectedArticle as Article);
+        if (s.resourceDetail) setResourceDetail(s.resourceDetail as { title: string; content: string });
+        if (s.previousView) setPreviousView(s.previousView as ViewState);
+        if (s.researchQueryInput) setResearchQueryInput(s.researchQueryInput as string);
+        if (s.researchResult) setResearchResult(s.researchResult as ResearchResult);
+      } catch {}
+    }
   }, []);
 
   useEffect(() => {
@@ -71,6 +89,13 @@ const InnerApp: React.FC = () => {
     };
     if (view === 'FEED') { loadArticles(); }
   }, [activeSubject, view]);
+
+  useEffect(() => {
+    try {
+      const s = { view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
+    } catch {}
+  }, [view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult]);
 
   const refreshNotes = () => { setNotes(getNotes()); };
 

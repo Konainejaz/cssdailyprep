@@ -10,8 +10,6 @@ if (!rootElement) {
 const root = ReactDOM.createRoot(rootElement);
 root.render(
   <React.StrictMode>
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center">
-      <App />
-    </div>
+    <App />
   </React.StrictMode>
 );
