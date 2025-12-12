@@ -470,9 +470,15 @@ export const fetchStudyMaterial = async (
       break;
     case 'ISLAMIAT':
       systemPrompt = `You are an Islamic Scholar and Central Superior Services (CSS) expert. Provide a curated list of KEY Quranic verses and Hadiths essential for major CSS Islamiat topics (e.g., Governance, Human Rights, Women's Rights, Social Justice, Tauheed, Risalat).
+      
+      CRITICAL REQUIREMENT:
+      The "arabic" field MUST contain ONLY pure Arabic text (UTF-8).
+      - ABSOLUTELY NO English characters, numbers, punctuation like "rdf.", or formatting symbols in the "arabic" field.
+      - If you are not 100% sure of the exact Arabic text, do not invent it.
+      
       Return a strict JSON object with a key "items" containing an array of objects.
       Each object must have: 
-      - "arabic" (string, MUST BE PROPER UTF-8 ARABIC TEXT like "الله", NOT unicode escape sequences like "\\u0627")
+      - "arabic" (string, ONLY ARABIC CHARACTERS. Example: "الله نور السماوات والأرض")
       - "translation" (string, clear and eloquent English)
       - "reference" (string, e.g., "Surah Al-Baqarah 2:256" or "Sahih Bukhari, Book of Knowledge")
       - "context" (string, specifically explaining which CSS topics this verse/hadith can be quoted in and why).`;
@@ -497,9 +503,14 @@ export const fetchStudyMaterial = async (
   `;
 
   try {
+    // Use a more capable model for Islamiat to ensure Arabic accuracy
+    const targetModel = (type === 'ISLAMIAT' || type === 'ISLAMIAT_DETAIL') 
+      ? 'llama-3.3-70b-versatile' 
+      : MODEL_ID;
+
     const completion = await groq.chat.completions.create({
       messages: [{ role: 'user', content: fullPrompt }],
-      model: MODEL_ID,
+      model: targetModel,
       response_format: { type: 'json_object' },
     });
 
@@ -510,6 +521,17 @@ export const fetchStudyMaterial = async (
     if (type === 'ESSAY_DETAIL') return data.content || "";
     if (type === 'ISLAMIAT_DETAIL') return data.details || {};
     
+    if (type === 'ISLAMIAT') {
+      const items = data.items || [];
+      // Post-process to strip non-Arabic characters from arabic field
+      return items.map((item: any) => ({
+        ...item,
+        // Regex to keep only Arabic range, spaces, and common Islamic symbols.
+        // Strips English letters (a-z, A-Z) specifically to fix issues like "rdf."
+        arabic: item.arabic ? item.arabic.replace(/[a-zA-Z]/g, '') : item.arabic
+      }));
+    }
+
     return data.items || [];
   } catch (error) {
     console.error("Groq API Error (fetchStudyMaterial):", error);

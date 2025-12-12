@@ -94,3 +94,43 @@ export const markQuestionsAsSeen = (questions: QuizQuestion[]) => {
 export const getSeenQuestions = (): string[] => {
     return getQuestionHistory();
 }
+
+// Streak Management
+const STREAK_KEY = 'css_prep_streak_v1';
+
+export interface StreakData {
+  count: number;
+  lastVisitDate: string; // ISO Date string YYYY-MM-DD
+}
+
+export const getStreak = (): StreakData => {
+  try {
+    const data = localStorage.getItem(STREAK_KEY);
+    return data ? JSON.parse(data) : { count: 0, lastVisitDate: '' };
+  } catch (e) {
+    return { count: 0, lastVisitDate: '' };
+  }
+};
+
+export const updateStreak = (): StreakData => {
+  const current = getStreak();
+  const today = new Date().toISOString().split('T')[0];
+  
+  if (current.lastVisitDate === today) {
+    return current;
+  }
+
+  const lastDate = new Date(current.lastVisitDate);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
+  const yesterdayStr = yesterday.toISOString().split('T')[0];
+
+  let newCount = 1;
+  if (current.lastVisitDate === yesterdayStr) {
+    newCount = current.count + 1;
+  }
+
+  const newStreak = { count: newCount, lastVisitDate: today };
+  localStorage.setItem(STREAK_KEY, JSON.stringify(newStreak));
+  return newStreak;
+};

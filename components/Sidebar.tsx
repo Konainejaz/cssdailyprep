@@ -1,5 +1,6 @@
 import React from 'react';
 import { ViewState } from '../types';
+import { StreakData } from '../services/storageService';
 import { 
   BookIcon, TrophyIcon, GlobeIcon, NoteIcon, CrossIcon, 
   ListIcon
@@ -11,10 +12,11 @@ interface SidebarProps {
   onViewChange: (view: ViewState) => void;
   mobileMenuOpen: boolean;
   setMobileMenuOpen: (open: boolean) => void;
+  streak: StreakData;
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ 
-  view, onViewChange, mobileMenuOpen, setMobileMenuOpen 
+  view, onViewChange, mobileMenuOpen, setMobileMenuOpen, streak
 }) => {
   const { t, language, setLanguage } = useLanguage();
 
@@ -93,9 +95,12 @@ const Sidebar: React.FC<SidebarProps> = ({
             <p className="text-xs text-gray-400 mb-2">Study Streak</p>
             <div className="flex items-center gap-2">
                <div className="h-2 flex-1 bg-gray-700 rounded-full overflow-hidden">
-                 <div className="h-full bg-pakGreen-500 w-[60%]"></div>
+                 <div 
+                   className="h-full bg-pakGreen-500 transition-all duration-1000 ease-out" 
+                   style={{ width: `${Math.min((streak.count / 7) * 100, 100)}%` }}
+                 ></div>
                </div>
-               <span className="text-xs font-bold text-white">3 Days</span>
+               <span className="text-xs font-bold text-white">{streak.count} Day{streak.count !== 1 ? 's' : ''}</span>
             </div>
          </div>
       </div>

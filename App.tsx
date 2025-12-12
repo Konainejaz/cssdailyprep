@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown'; 
 import { Subject, Article, Note, ViewState, ResearchResult } from './types';
 import { fetchDailyArticles, researchTopic, fetchStudyMaterial } from './services/groqService';
-import { getNotes } from './services/storageService';
+import { getNotes, updateStreak, StreakData } from './services/storageService';
 import ArticleCard from './components/ArticleCard';
 import NoteEditor from './components/NoteEditor';
 import Sidebar from './components/Sidebar';
@@ -62,6 +62,7 @@ const InnerApp: React.FC = () => {
 
   // Sidebar State
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [streak, setStreak] = useState<StreakData>({ count: 0, lastVisitDate: '' });
 
   const STORAGE_KEY = 'cssprep:app_state';
 
@@ -70,6 +71,10 @@ const InnerApp: React.FC = () => {
     // Load notes from storage on mount
     const savedNotes = getNotes();
     setNotes(savedNotes);
+
+    // Update Streak
+    const currentStreak = updateStreak();
+    setStreak(currentStreak);
   }, []);
 
   useEffect(() => {
@@ -211,6 +216,7 @@ const InnerApp: React.FC = () => {
         onViewChange={setView} 
         mobileMenuOpen={mobileMenuOpen} 
         setMobileMenuOpen={setMobileMenuOpen} 
+        streak={streak}
       />
       
       {/* Mobile Overlay */}
