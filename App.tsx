@@ -104,14 +104,23 @@ const InnerApp: React.FC = () => {
   }, []);
 
   useEffect(() => {
+    let isMounted = true;
     const loadArticles = async () => {
       setLoading(true);
       setArticles([]); 
-      const data = await fetchDailyArticles(activeSubject);
-      setArticles(data);
-      setLoading(false);
+      try {
+        const data = await fetchDailyArticles(activeSubject);
+        if (isMounted) {
+          setArticles(data);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (isMounted) setLoading(false);
+      }
     };
     if (view === 'FEED') { loadArticles(); }
+    
+    return () => { isMounted = false; };
   }, [activeSubject, view]);
 
   useEffect(() => {
