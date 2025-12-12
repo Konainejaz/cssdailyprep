@@ -15,6 +15,14 @@ const groq = new Groq({
 
 const MODEL_ID = 'llama-3.1-8b-instant';
 
+// Helper to fix double-escaped unicode characters (e.g. \\u2019 -> ’)
+const cleanText = (text: string): string => {
+  if (!text) return "";
+  return text.replace(/\\u([\d\w]{4})/gi, (match, grp) => {
+    return String.fromCharCode(parseInt(grp, 16));
+  });
+};
+
 export const fetchDailyArticles = async (subject: Subject, count: number = 6): Promise<Article[]> => {
   // 1. Check Cache
   const today = new Date().toISOString().split('T')[0];
@@ -34,6 +42,9 @@ export const fetchDailyArticles = async (subject: Subject, count: number = 6): P
   }
 
   const subjectGuidelines = (() => {
+    if (subject === Subject.ALL) {
+      return `Formatting: Provide a diverse mix of articles: 2 from Pakistan Affairs, 2 from International Relations, and 2 from Current Affairs/Economy. Ensure a balanced perspective relevant to CSS exams.`;
+    }
     switch (subject) {
       case Subject.ESSAY:
         return `Formatting: Write each article's content as a mini-essay with an Introduction, Body, and Conclusion. Minimum 300 words. Use Markdown headings (## Introduction, ## Analysis, ## Conclusion). Include 2–3 references at the end.`;
@@ -60,7 +71,7 @@ export const fetchDailyArticles = async (subject: Subject, count: number = 6): P
     Act as a highly experienced CSS (Central Superior Services) exam mentor in Pakistan.
     Create a daily digest of ${count} distinct, high-quality articles for the subject: "${subject}".
     
-    The content must be strictly relevant to "${subject}" and:
+    The content must be strictly relevant to "${subject}" (or General CSS Topics if 'All Subjects') and:
     1. Current affairs affecting Pakistan (last 12 months) related to this subject.
     2. Core syllabus concepts for CSS specific to "${subject}".
     3. Critical analysis of recent events.
@@ -95,6 +106,10 @@ export const fetchDailyArticles = async (subject: Subject, count: number = 6): P
     // Map to Article interface
     const articles = articlesRaw.map((item: any, index: number) => ({
       ...item,
+      title: cleanText(item.title),
+      summary: cleanText(item.summary),
+      content: cleanText(item.content),
+      source: cleanText(item.source),
       id: `${subject.replace(/\s/g, '')}-${Date.now()}-${index}`,
       subject: subject,
       date: new Date().toLocaleDateString('en-PK', { year: 'numeric', month: 'long', day: 'numeric' })
@@ -454,13 +469,13 @@ export const fetchStudyMaterial = async (
       IMPORTANT: The value of "content" must be a SINGLE string containing the entire markdown text. Do NOT return an object or array for "content".`;
       break;
     case 'ISLAMIAT':
-      systemPrompt = `You are an Islamic Scholar and Central Superior Services (CSS) expert. Provide Quranic verses/Hadiths.
+      systemPrompt = `You are an Islamic Scholar and Central Superior Services (CSS) expert. Provide a curated list of KEY Quranic verses and Hadiths essential for major CSS Islamiat topics (e.g., Governance, Human Rights, Women's Rights, Social Justice, Tauheed, Risalat).
       Return a strict JSON object with a key "items" containing an array of objects.
       Each object must have: 
       - "arabic" (string, MUST BE PROPER UTF-8 ARABIC TEXT like "الله", NOT unicode escape sequences like "\\u0627")
-      - "translation" (string)
-      - "reference" (string)
-      - "context" (string, explaining CSS relevance).`;
+      - "translation" (string, clear and eloquent English)
+      - "reference" (string, e.g., "Surah Al-Baqarah 2:256" or "Sahih Bukhari, Book of Knowledge")
+      - "context" (string, specifically explaining which CSS topics this verse/hadith can be quoted in and why).`;
       break;
     case 'ISLAMIAT_DETAIL':
       systemPrompt = `You are an Islamic Scholar and Central Superior Services (CSS) expert. Provide a detailed analysis of the given verse/Hadith specifically for CSS exams.

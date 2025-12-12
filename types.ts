@@ -9,6 +9,7 @@ export enum Subject {
   ESSAY = "English Essay",
   CURRENT_AFFAIRS = "Current Affairs",
   ISLAMIAT = "Islamiat",
+  ALL = "All Subjects",
   ALL_COMPULSORY = "All Compulsory Subjects",
   ALL_OPTIONAL = "All Optional Subjects"
 }

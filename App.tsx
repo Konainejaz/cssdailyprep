@@ -36,7 +36,7 @@ const InnerApp: React.FC = () => {
   const { t } = useLanguage();
   // --- State ---
   const [view, setView] = useState<ViewState>('FEED');
-  const [activeSubject, setActiveSubject] = useState<Subject>(Subject.PAK_AFFAIRS);
+  const [activeSubject, setActiveSubject] = useState<Subject>(Subject.ALL);
   
   // Content State
   const [articles, setArticles] = useState<Article[]>([]);
@@ -188,7 +188,7 @@ const InnerApp: React.FC = () => {
 
   const renderSubjectSelector = () => (
     <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2 mb-4">
-      {[...COMPULSORY_SUBJECTS, ...OPTIONAL_SUBJECTS].map((subject) => (
+      {[Subject.ALL, ...COMPULSORY_SUBJECTS, ...OPTIONAL_SUBJECTS].map((subject) => (
         <button
           key={subject}
           onClick={() => setActiveSubject(subject)}

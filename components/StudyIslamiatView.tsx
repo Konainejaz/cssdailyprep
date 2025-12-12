@@ -96,8 +96,8 @@ ${item.keyTakeaways?.map(k => `- ${k}`).join('\n') || ''}
           <ChevronLeftIcon className="w-6 h-6" />
         </button>
         <div>
-          <h1 className="text-xl md:text-2xl font-bold font-serif text-gray-900">Islamiat References</h1>
-          <p className="text-sm text-gray-500">Quranic Verses & Hadiths for CSS</p>
+          <h1 className="text-xl md:text-2xl font-bold font-serif text-gray-900">Key Quranic Verses & Hadiths</h1>
+          <p className="text-sm text-gray-500">For Islamiat CSS Topics</p>
         </div>
       </div>
 
