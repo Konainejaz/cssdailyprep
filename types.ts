@@ -65,7 +65,33 @@ export interface QuizSession {
   timeSpent: number; // seconds
 }
 
-export type ViewState = 'FEED' | 'NOTE_LIST' | 'NOTE_EDIT' | 'ARTICLE_DETAIL' | 'RESEARCH' | 'QUIZ' | 'QUIZ_SESSION' | 'STUDY_MATERIAL' | 'SYLLABUS' | 'CSS_RESOURCES' | 'RESOURCE_DETAIL' | 'GENDER_SYLLABUS' | 'INTERVIEW_PREP' | 'SUBJECT_SELECTION';
+export interface StudyTimelineItem {
+  date: string;
+  title: string;
+  description: string;
+  category?: string;
+}
+
+export interface StudyVocabItem {
+  word: string;
+  meaning: string;
+  sentence: string;
+  type?: string;
+}
+
+export interface StudyEssayItem {
+  title: string;
+  outline: string[];
+}
+
+export interface StudyIslamiatItem {
+  arabic: string;
+  translation: string;
+  reference: string;
+  context: string;
+}
+
+export type ViewState = 'FEED' | 'NOTE_LIST' | 'NOTE_EDIT' | 'ARTICLE_DETAIL' | 'RESEARCH' | 'QUIZ' | 'QUIZ_SESSION' | 'STUDY_MATERIAL' | 'SYLLABUS' | 'CSS_RESOURCES' | 'RESOURCE_DETAIL' | 'GENDER_SYLLABUS' | 'INTERVIEW_PREP' | 'SUBJECT_SELECTION' | 'STUDY_TIMELINE' | 'STUDY_VOCAB' | 'STUDY_ESSAYS' | 'STUDY_ISLAMIAT';
 
 export interface SidebarItem {
   title: string;

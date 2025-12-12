@@ -1,13 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown'; 
 import { Subject, Article, Note, ViewState, ResearchResult } from './types';
-import { fetchDailyArticles, researchTopic } from './services/groqService';
+import { fetchDailyArticles, researchTopic, fetchStudyMaterial } from './services/groqService';
 import { getNotes } from './services/storageService';
 import ArticleCard from './components/ArticleCard';
 import NoteEditor from './components/NoteEditor';
 import Sidebar from './components/Sidebar';
 import QuizView from './components/QuizView';
 import StudyMaterialView from './components/StudyMaterialView';
+import StudyTimelineView from './components/StudyTimelineView';
+import StudyVocabView from './components/StudyVocabView';
+import StudyEssaysView from './components/StudyEssaysView';
+import StudyIslamiatView from './components/StudyIslamiatView';
 import CssResourcesView from './components/CssResourcesView';
 import SyllabusHub from './components/SyllabusHub';
 import ResourceDetailView from './components/ResourceDetailView';
@@ -44,6 +48,10 @@ const InnerApp: React.FC = () => {
   const [researchQueryInput, setResearchQueryInput] = useState('');
   const [researchResult, setResearchResult] = useState<ResearchResult | null>(null);
   const [isResearching, setIsResearching] = useState(false);
+
+  // Study Material State
+  const [studyCache, setStudyCache] = useState<Record<string, any>>({});
+  const [activeStudyId, setActiveStudyId] = useState<string>('');
 
   // Selection State
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -109,6 +117,38 @@ const InnerApp: React.FC = () => {
     const result = await researchTopic(prompt);
     setResearchResult(result);
     setIsResearching(false);
+  };
+
+  const handleStudySelect = async (item: any) => {
+    const { id, prompt, category } = item;
+    
+    let nextView: ViewState = 'STUDY_MATERIAL';
+    let type: 'TIMELINE' | 'VOCAB' | 'ESSAY' | 'ISLAMIAT' | null = null;
+
+    if (id === 'sm-1') { nextView = 'STUDY_ESSAYS'; type = 'ESSAY'; }
+    else if (id === 'sm-2') { nextView = 'STUDY_VOCAB'; type = 'VOCAB'; }
+    else if (id === 'sm-3') { nextView = 'STUDY_ISLAMIAT'; type = 'ISLAMIAT'; }
+    else if (id === 'sm-4') { nextView = 'STUDY_TIMELINE'; type = 'TIMELINE'; }
+
+    if (!type) {
+      // Fallback to generic resource request if not matched
+      handleResourceRequest(prompt, item.title, category);
+      return;
+    }
+
+    setPreviousView(view);
+    setView(nextView);
+    setActiveStudyId(id);
+
+    // Check Cache
+    if (studyCache[id]) {
+      return;
+    }
+
+    setLoading(true);
+    const data = await fetchStudyMaterial(type, prompt);
+    setStudyCache(prev => ({ ...prev, [id]: data }));
+    setLoading(false);
   };
 
   const handleResourceRequest = async (prompt: string, title: string, context?: string) => {
@@ -277,8 +317,40 @@ const InnerApp: React.FC = () => {
 
           {view === 'STUDY_MATERIAL' && (
             <StudyMaterialView 
-              onSelect={handleResourceRequest} 
+              onSelect={handleStudySelect} 
               onOpenSyllabus={() => setView('SYLLABUS')} 
+            />
+          )}
+
+          {view === 'STUDY_TIMELINE' && (
+            <StudyTimelineView
+              items={studyCache[activeStudyId] || []}
+              isLoading={loading}
+              onBack={() => setView('STUDY_MATERIAL')}
+            />
+          )}
+
+          {view === 'STUDY_VOCAB' && (
+            <StudyVocabView
+              items={studyCache[activeStudyId] || []}
+              isLoading={loading}
+              onBack={() => setView('STUDY_MATERIAL')}
+            />
+          )}
+
+          {view === 'STUDY_ESSAYS' && (
+            <StudyEssaysView
+              items={studyCache[activeStudyId] || []}
+              isLoading={loading}
+              onBack={() => setView('STUDY_MATERIAL')}
+            />
+          )}
+
+          {view === 'STUDY_ISLAMIAT' && (
+            <StudyIslamiatView
+              items={studyCache[activeStudyId] || []}
+              isLoading={loading}
+              onBack={() => setView('STUDY_MATERIAL')}
             />
           )}
 

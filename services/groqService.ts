@@ -1,5 +1,8 @@
 import Groq from 'groq-sdk';
-import { Subject, Article, ResearchResult, QuizQuestion, Difficulty } from '../types';
+import { 
+  Subject, Article, ResearchResult, QuizQuestion, Difficulty,
+  StudyTimelineItem, StudyVocabItem, StudyEssayItem, StudyIslamiatItem
+} from '../types';
 import { getQuestionBank, saveQuestionsToBank, getSeenQuestions } from './storageService';
 import { COMPULSORY_SUBJECTS, OPTIONAL_SUBJECTS } from '../constants';
 
@@ -289,5 +292,58 @@ export const researchTopic = async (query: string): Promise<ResearchResult | nul
   } catch (fallbackError) {
     console.error('Fallback generation failed:', fallbackError);
     return null;
+  }
+};
+
+export const fetchStudyMaterial = async (
+  type: 'TIMELINE' | 'VOCAB' | 'ESSAY' | 'ISLAMIAT',
+  promptText: string
+): Promise<any> => {
+  let systemPrompt = '';
+  
+  switch (type) {
+    case 'TIMELINE':
+      systemPrompt = `You are a historian and CSS expert. Create a timeline of events based on the request.
+      Return a strict JSON object with a key "items" containing an array of objects.
+      Each object must have: "date" (string), "title" (string), "description" (string, max 30 words), "category" (string).`;
+      break;
+    case 'VOCAB':
+      systemPrompt = `You are an English language expert. Provide advanced vocabulary words for CSS.
+      Return a strict JSON object with a key "items" containing an array of objects.
+      Each object must have: "word" (string), "meaning" (string), "sentence" (string), "type" (string, e.g., Noun, Verb).`;
+      break;
+    case 'ESSAY':
+      systemPrompt = `You are a CSS Essay expert. Provide essay topics and outlines.
+      Return a strict JSON object with a key "items" containing an array of objects.
+      Each object must have: "title" (string), "outline" (array of strings representing main points).`;
+      break;
+    case 'ISLAMIAT':
+      systemPrompt = `You are an Islamic Scholar and CSS expert. Provide Quranic verses/Hadiths.
+      Return a strict JSON object with a key "items" containing an array of objects.
+      Each object must have: "arabic" (string), "translation" (string), "reference" (string), "context" (string).`;
+      break;
+  }
+
+  const fullPrompt = `
+    ${systemPrompt}
+    
+    User Request: "${promptText}"
+    
+    Ensure the response is valid JSON.
+  `;
+
+  try {
+    const completion = await groq.chat.completions.create({
+      messages: [{ role: 'user', content: fullPrompt }],
+      model: MODEL_ID,
+      response_format: { type: 'json_object' },
+    });
+
+    const responseText = completion.choices[0]?.message?.content || "{\"items\": []}";
+    const data = JSON.parse(responseText);
+    return data.items || [];
+  } catch (error) {
+    console.error("Groq API Error (fetchStudyMaterial):", error);
+    return [];
   }
 };

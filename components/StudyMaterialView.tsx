@@ -4,7 +4,7 @@ import { SearchIcon, CheckIcon } from './Icons';
 import { useLanguage } from '../contexts/LanguageContext';
 
 interface Props {
-  onSelect: (prompt: string, title: string, context?: string) => void;
+  onSelect: (item: typeof STUDY_MATERIALS[0]) => void;
   onOpenSyllabus?: () => void;
 }
 
@@ -61,7 +61,7 @@ const StudyMaterialView: React.FC<Props> = ({ onSelect, onOpenSyllabus }) => {
           {filtered.map(item => (
             <div 
               key={item.id} 
-              onClick={() => onSelect(item.prompt, item.title, item.category)}
+              onClick={() => onSelect(item)}
               className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all cursor-pointer group relative overflow-hidden"
             >
               <div className="absolute top-0 left-0 w-1 h-full bg-pakGreen-500 opacity-0 group-hover:opacity-100 transition-opacity" />
