@@ -40,7 +40,7 @@ export const STUDY_MATERIALS = [
   { id: 'sm-1', title: 'Important Essays', prompt: 'List 10 expected essay topics for CSS 2025 with outlines.', category: 'Essay' },
   { id: 'sm-2', title: 'Vocabulary Builder', prompt: 'Provide 20 high-frequency GRE words with meanings and sentence usage for CSS.', category: 'English' },
   { id: 'sm-3', title: 'Islamiat Verses', prompt: 'Key Quranic verses and Hadiths for Islamiat CSS topics.', category: 'Islamiat' },
-  { id: 'sm-4', title: 'Current Affairs Timeline', prompt: 'Create a timeline of major events in Pakistan for the last 12 months.', category: 'Current Affairs' },
+  { id: 'sm-4', title: 'Current Affairs Timeline', prompt: 'Create a timeline of at least 20 major events in Pakistan and the world for the last 12 months.', category: 'Current Affairs' },
 ];
 
 export const CSS_RESOURCES = [

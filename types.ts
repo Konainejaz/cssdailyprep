@@ -35,10 +35,18 @@ export interface Note {
   linkedArticleId?: string; // If created from an article
 }
 
+export interface MindMapNode {
+  id: string;
+  label: string;
+  details?: string;
+  children?: MindMapNode[];
+}
+
 export interface ResearchResult {
   query: string;
   content: string;
   sources: Array<{ title: string; url: string }>;
+  mindMap?: MindMapNode;
 }
 
 export enum Difficulty {
@@ -66,10 +74,16 @@ export interface QuizSession {
 }
 
 export interface StudyTimelineItem {
+  id: string; // Added ID for detailed fetching/persistence
   date: string;
   title: string;
   description: string;
   category?: string;
+  content?: string; // Full 300+ words
+  source?: string;
+  tags?: string[];
+  imagePrompt?: string; // For generating/finding images
+  imageKeyword?: string; // Short keyword for image search
 }
 
 export interface StudyVocabItem {
@@ -80,15 +94,23 @@ export interface StudyVocabItem {
 }
 
 export interface StudyEssayItem {
+  id: string; // Added ID
   title: string;
   outline: string[];
+  content?: string; // Full essay
 }
 
 export interface StudyIslamiatItem {
+  id?: string; // Optional ID for tracking
   arabic: string;
   translation: string;
   reference: string;
   context: string;
+  // Detailed fields
+  analysis?: string;
+  cssRelevance?: string;
+  relatedTopics?: string[];
+  keyTakeaways?: string[];
 }
 
 export type ViewState = 'FEED' | 'NOTE_LIST' | 'NOTE_EDIT' | 'ARTICLE_DETAIL' | 'RESEARCH' | 'QUIZ' | 'QUIZ_SESSION' | 'STUDY_MATERIAL' | 'SYLLABUS' | 'CSS_RESOURCES' | 'RESOURCE_DETAIL' | 'GENDER_SYLLABUS' | 'INTERVIEW_PREP' | 'SUBJECT_SELECTION' | 'STUDY_TIMELINE' | 'STUDY_VOCAB' | 'STUDY_ESSAYS' | 'STUDY_ISLAMIAT';

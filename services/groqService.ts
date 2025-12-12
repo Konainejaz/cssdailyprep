@@ -204,7 +204,13 @@ export const generateQuiz = async (subject: Subject, difficulty: Difficulty, cou
 };
 export const researchTopic = async (query: string): Promise<ResearchResult | null> => {
   const prompt = `
-    Research the following topic for a CSS exam student in Pakistan. 
+    Research the following topic for a Central Superior Services (CSS) exam student in Pakistan. 
+    
+    CRITICAL CONTEXT INSTRUCTIONS:
+    1. STRICTLY EXCLUDE any information related to "Cascading Style Sheets" (web development), HTML, CSS coding, or programming.
+    2. Focus ONLY on the Civil Service/Competitive Exam system in Pakistan conducted by FPSC.
+    3. Ensure all content is relevant to Pakistan's administrative services, government structure, or current affairs as per the CSS syllabus.
+
     Provide a comprehensive, fact-based answer with recent data, critical analysis, and relevance to the CSS syllabus. 
     Topic: "${query}"
     
@@ -295,32 +301,175 @@ export const researchTopic = async (query: string): Promise<ResearchResult | nul
   }
 };
 
+export const researchWithImages = async (query: string, images: string[]): Promise<ResearchResult | null> => {
+  const prompt = `
+    Analyze the provided images and the user's query: "${query}"
+    
+    Context: You are a Central Superior Services (CSS) exam mentor in Pakistan.
+    
+    1. Analyze the images in detail (look for charts, text, maps, or relevant visual data).
+    2. Integrate the visual findings with the user's query.
+    3. Provide a structured research output relevant to CSS subjects (Current Affairs, Pak Affairs, IR, etc.).
+    
+    Return a strict JSON object with:
+    1. "content": A comprehensive Markdown analysis merging image insights and query context.
+    2. "sources": Array of likely sources or references.
+    3. "mindMap": A hierarchical structure representing the key concepts.
+       - Root node: Main topic
+       - Children: Subtopics/Findings
+       - Each node has: "id" (unique string), "label" (short title), "details" (brief explanation), "children" (array of nodes).
+    
+    Example Mind Map Structure:
+    {
+      "id": "root",
+      "label": "Climate Change in Pakistan",
+      "children": [
+        { "id": "1", "label": "Causes", "details": "...", "children": [...] },
+        { "id": "2", "label": "Impacts", "details": "...", "children": [...] }
+      ]
+    }
+  `;
+
+  try {
+    const messages: any[] = [
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: prompt },
+          ...images.map(img => ({
+            type: 'image_url',
+            image_url: { 
+              url: img,
+              detail: 'auto'
+            }
+          }))
+        ]
+      }
+    ];
+
+    const completion = await groq.chat.completions.create({
+      messages: messages,
+      model: 'meta-llama/llama-4-scout-17b-16e-instruct',
+      response_format: { type: 'json_object' },
+      temperature: 0.5,
+      max_tokens: 4000,
+    });
+    
+    const responseText = completion.choices[0]?.message?.content || "{}";
+    
+    try {
+      const data = JSON.parse(responseText);
+      return {
+        query,
+        content: data.content || "No content generated.",
+        sources: data.sources || [],
+        mindMap: data.mindMap
+      };
+    } catch (parseError) {
+      console.error("JSON Parse Error in Vision:", parseError);
+      console.log("Raw Response:", responseText);
+      // Fallback: Return raw text as content if JSON fails
+      return {
+        query,
+        content: responseText,
+        sources: [],
+        mindMap: null
+      };
+    }
+
+  } catch (error: any) {
+    console.error("Groq Vision API Error:", error);
+    // Log more details if available
+    if (error?.error) {
+        console.error("API Error Details:", error.error);
+    }
+    return null;
+  }
+};
+
 export const fetchStudyMaterial = async (
-  type: 'TIMELINE' | 'VOCAB' | 'ESSAY' | 'ISLAMIAT',
+  type: 'TIMELINE' | 'VOCAB' | 'ESSAY' | 'ISLAMIAT' | 'TIMELINE_DETAIL' | 'ESSAY_DETAIL' | 'ISLAMIAT_DETAIL',
   promptText: string
 ): Promise<any> => {
   let systemPrompt = '';
   
   switch (type) {
     case 'TIMELINE':
-      systemPrompt = `You are a historian and CSS expert. Create a timeline of events based on the request.
-      Return a strict JSON object with a key "items" containing an array of objects.
-      Each object must have: "date" (string), "title" (string), "description" (string, max 30 words), "category" (string).`;
+      systemPrompt = `You are a historian and Central Superior Services (CSS) exam expert. Create a comprehensive timeline of events based on the request.
+      Return a strict JSON object with a key "items" containing an array of at least 15 objects.
+      Each object must have: 
+      - "id" (string, unique)
+      - "date" (string)
+      - "title" (string)
+      - "description" (string, max 30 words)
+      - "category" (string)
+      - "content" (string, detailed summary approx 100 words)
+      - "source" (string)
+      - "tags" (array of strings)`;
+      break;
+    case 'TIMELINE_DETAIL':
+      systemPrompt = `You are a Central Superior Services (CSS) Current Affairs expert. Provide a comprehensive detailed analysis for the given event.
+      Return a strict JSON object with a key "details" object.
+      The object must have:
+      - "content" (string, markdown formatted, MINIMUM 1000 WORDS. Must cover: Introduction, Historical Background, Key Events, Implications for Pakistan & Global Politics, Critical Analysis, Conclusion. Do NOT use nested objects, just one long markdown string.)
+      - "imagePrompt" (string, description for an image representing the event)
+      - "imageKeyword" (string, a single precise English keyword to generate an image, e.g. "Diplomacy", "War", "Economy")
+      - "source" (string)
+      - "tags" (array of strings)`;
       break;
     case 'VOCAB':
-      systemPrompt = `You are an English language expert. Provide advanced vocabulary words for CSS.
+      systemPrompt = `You are an English language expert for Central Superior Services (CSS) exams. Provide advanced vocabulary words.
       Return a strict JSON object with a key "items" containing an array of objects.
       Each object must have: "word" (string), "meaning" (string), "sentence" (string), "type" (string, e.g., Noun, Verb).`;
       break;
     case 'ESSAY':
-      systemPrompt = `You are a CSS Essay expert. Provide essay topics and outlines.
+      systemPrompt = `You are a Central Superior Services (CSS) Essay expert. Provide essay topics and outlines.
       Return a strict JSON object with a key "items" containing an array of objects.
-      Each object must have: "title" (string), "outline" (array of strings representing main points).`;
+      Each object must have: 
+      - "id" (string, unique)
+      - "title" (string)
+      - "outline" (array of strings representing main points).`;
+      break;
+    case 'ESSAY_DETAIL':
+      systemPrompt = `You are a Central Superior Services (CSS) Essay expert. Write a MONUMENTAL, ACADEMIC MASTERPIECE based on the title and outline provided.
+      
+      Requirements:
+      1. **EXTREME LENGTH**: The essay MUST be at least 2500-3000 words. Do not hold back. Expand every point exhaustively.
+      2. **Structure**: 
+         - **Introduction**: 2-3 paragraphs ending with a strong thesis.
+         - **Body**: 15-20 paragraphs. Each must have a clear topic sentence, evidence, critical analysis, and transition.
+         - **Conclusion**: 2-3 paragraphs synthesizing arguments.
+      3. **Tone**: Highly formal, academic, and sophisticated vocabulary. No conversational fillers.
+      4. **Formatting**: 
+         - Use Markdown headers (##) for main sections. 
+         - Use **bold** for key terms.
+         - Ensure paragraphs are long and detailed.
+      5. **Content**:
+         - DO NOT simply reprint the outline.
+         - DO NOT write "Here is the essay...".
+         - START DIRECTLY with the Introduction.
+         - Ensure the content is the FULL ESSAY text, not a summary.
+      
+      Return a strict JSON object with a key "content". 
+      IMPORTANT: The value of "content" must be a SINGLE string containing the entire markdown text. Do NOT return an object or array for "content".`;
       break;
     case 'ISLAMIAT':
-      systemPrompt = `You are an Islamic Scholar and CSS expert. Provide Quranic verses/Hadiths.
+      systemPrompt = `You are an Islamic Scholar and Central Superior Services (CSS) expert. Provide Quranic verses/Hadiths.
       Return a strict JSON object with a key "items" containing an array of objects.
-      Each object must have: "arabic" (string), "translation" (string), "reference" (string), "context" (string).`;
+      Each object must have: 
+      - "arabic" (string, MUST BE PROPER UTF-8 ARABIC TEXT like "الله", NOT unicode escape sequences like "\\u0627")
+      - "translation" (string)
+      - "reference" (string)
+      - "context" (string, explaining CSS relevance).`;
+      break;
+    case 'ISLAMIAT_DETAIL':
+      systemPrompt = `You are an Islamic Scholar and Central Superior Services (CSS) expert. Provide a detailed analysis of the given verse/Hadith specifically for CSS exams.
+      Return a strict JSON object with a key "details" object.
+      The object must have:
+      - "analysis" (string, detailed explanation of the verse/hadith. If quoting Arabic, use UTF-8 characters, NOT unicode escapes)
+      - "cssRelevance" (string, how to quote this in essays, ISLAMIAT, or current affairs papers)
+      - "relatedTopics" (array of strings, e.g. "Human Rights", "Women's Rights", "Governance")
+      - "keyTakeaways" (array of strings, bullet points for memorization)`;
       break;
   }
 
@@ -341,6 +490,11 @@ export const fetchStudyMaterial = async (
 
     const responseText = completion.choices[0]?.message?.content || "{\"items\": []}";
     const data = JSON.parse(responseText);
+    
+    if (type === 'TIMELINE_DETAIL') return data.details || {};
+    if (type === 'ESSAY_DETAIL') return data.content || "";
+    if (type === 'ISLAMIAT_DETAIL') return data.details || {};
+    
     return data.items || [];
   } catch (error) {
     console.error("Groq API Error (fetchStudyMaterial):", error);

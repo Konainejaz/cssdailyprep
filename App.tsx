@@ -18,6 +18,7 @@ import ResourceDetailView from './components/ResourceDetailView';
 import GenderStudiesSyllabus from './components/GenderStudiesSyllabus';
 import InterviewPreparation from './components/InterviewPreparation';
 import SubjectSelectionGuide from './components/SubjectSelectionGuide';
+import ResearchCenter from './components/ResearchCenter';
 import { ArticleSkeleton } from './components/SkeletonLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
@@ -83,6 +84,7 @@ const InnerApp: React.FC = () => {
         if (s.previousView) setPreviousView(s.previousView as ViewState);
         if (s.researchQueryInput) setResearchQueryInput(s.researchQueryInput as string);
         if (s.researchResult) setResearchResult(s.researchResult as ResearchResult);
+        if (s.studyCache) setStudyCache(s.studyCache as Record<string, any>);
       } catch {}
     }
   }, []);
@@ -100,10 +102,10 @@ const InnerApp: React.FC = () => {
 
   useEffect(() => {
     try {
-      const s = { view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult };
+      const s = { view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult, studyCache };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
     } catch {}
-  }, [view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult]);
+  }, [view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult, studyCache]);
 
   const refreshNotes = () => { setNotes(getNotes()); };
 
@@ -147,8 +149,19 @@ const InnerApp: React.FC = () => {
 
     setLoading(true);
     const data = await fetchStudyMaterial(type, prompt);
-    setStudyCache(prev => ({ ...prev, [id]: data }));
+    // Ensure IDs exist for persistence updates
+    const dataWithIds = Array.isArray(data) ? data.map((item: any, idx: number) => ({ 
+      ...item, 
+      id: item.id || `${type}-${Date.now()}-${idx}` 
+    })) : data;
+    setStudyCache(prev => ({ ...prev, [id]: dataWithIds }));
     setLoading(false);
+  };
+
+  const handleStudyUpdate = (items: any[]) => {
+    if (activeStudyId) {
+      setStudyCache(prev => ({ ...prev, [activeStudyId]: items }));
+    }
   };
 
   const handleResourceRequest = async (prompt: string, title: string, context?: string) => {
@@ -327,6 +340,11 @@ const InnerApp: React.FC = () => {
               items={studyCache[activeStudyId] || []}
               isLoading={loading}
               onBack={() => setView('STUDY_MATERIAL')}
+              onSaveNote={(t, c) => {
+                setNoteToEdit({ title: t, content: c, subject: Subject.CURRENT_AFFAIRS });
+                setView('NOTE_EDIT');
+              }}
+              onUpdateItems={handleStudyUpdate}
             />
           )}
 
@@ -335,6 +353,10 @@ const InnerApp: React.FC = () => {
               items={studyCache[activeStudyId] || []}
               isLoading={loading}
               onBack={() => setView('STUDY_MATERIAL')}
+              onSaveNote={(t, c) => {
+                setNoteToEdit({ title: t, content: c, subject: Subject.ESSAY }); // Vocab usually falls under Essay/English
+                setView('NOTE_EDIT');
+              }}
             />
           )}
 
@@ -343,6 +365,11 @@ const InnerApp: React.FC = () => {
               items={studyCache[activeStudyId] || []}
               isLoading={loading}
               onBack={() => setView('STUDY_MATERIAL')}
+              onSaveNote={(t, c) => {
+                setNoteToEdit({ title: t, content: c, subject: Subject.ESSAY });
+                setView('NOTE_EDIT');
+              }}
+              onUpdateItems={handleStudyUpdate}
             />
           )}
 
@@ -351,6 +378,11 @@ const InnerApp: React.FC = () => {
               items={studyCache[activeStudyId] || []}
               isLoading={loading}
               onBack={() => setView('STUDY_MATERIAL')}
+              onSaveNote={(t, c) => {
+                setNoteToEdit({ title: t, content: c, subject: Subject.ISLAMIAT });
+                setView('NOTE_EDIT');
+              }}
+              onUpdateItems={handleStudyUpdate}
             />
           )}
 
@@ -401,66 +433,12 @@ const InnerApp: React.FC = () => {
           )}
 
           {view === 'RESEARCH' && (
-             <div className="h-full flex flex-col bg-gray-50">
-               <div className="px-4 md:px-6 py-6 md:py-8 bg-white shadow-sm border-b border-gray-100">
-                  <h1 className="text-2xl font-bold font-serif mb-2 text-center md:text-left max-w-5xl mx-auto">{t('researchLab')}</h1>
-                  <div className="relative w-full max-w-5xl mx-auto">
-                     <input 
-                       className="w-full bg-gray-100 border-none rounded-xl py-4 pl-12 pr-28 text-[16px] md:text-lg focus:ring-2 focus:ring-pakGreen-500 transition-all shadow-sm"
-                       placeholder={t('searchPlaceholder')}
-                       value={researchQueryInput}
-                       onChange={e => setResearchQueryInput(e.target.value)}
-                       onKeyDown={e => e.key === 'Enter' && handleResearchRequest(researchQueryInput, searchQuery)}
-                     />
-                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-6 h-6" />
-                     <button 
-                       onClick={() => handleResearchRequest(researchQueryInput, searchQuery)}
-                       disabled={isResearching}
-                       className="absolute right-2 top-1/2 -translate-y-1/2 bg-pakGreen-600 text-white px-6 py-2 rounded-lg text-sm font-bold hover:bg-pakGreen-700 disabled:opacity-50 shadow-md transition-transform active:scale-95"
-                     >
-                       {isResearching ? t('searching') : t('search')}
-                     </button>
-                  </div>
-               </div>
-               <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8">
-                  {researchResult ? (
-                     <div className="w-full max-w-5xl mx-auto bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-100 animate-fade-in">
-                        <div className="flex justify-between items-start mb-6 border-b border-gray-100 pb-4">
-                           <h2 className="text-3xl font-serif font-bold text-gray-900 leading-tight">{researchResult.query}</h2>
-                           <button onClick={() => {
-                              setNoteToEdit({ title: researchResult.query, content: researchResult.content });
-                              setView('NOTE_EDIT');
-                           }} className="text-pakGreen-600 hover:bg-pakGreen-50 p-2 rounded-full transition-colors" title="Save to Notes">
-                              <PlusIcon className="w-6 h-6" />
-                           </button>
-                        </div>
-                        <div className="prose prose-lg prose-pakGreen max-w-none text-gray-700 font-serif leading-relaxed mb-8 prose-headings:font-bold prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-a:text-pakGreen-600 prose-a:no-underline hover:prose-a:underline prose-li:marker:text-pakGreen-500">
-                           <ReactMarkdown>{researchResult.content}</ReactMarkdown>
-                        </div>
-                        {researchResult.sources.length > 0 && (
-                           <div className="bg-gray-50 rounded-xl p-6 border border-gray-100">
-                              <h4 className="text-xs font-bold text-gray-500 uppercase mb-4 tracking-wider">Cited Sources</h4>
-                              <ul className="space-y-3">
-                                 {researchResult.sources.map((src, i) => (
-                                    <li key={i}>
-                                       <a href={src.url} target="_blank" rel="noreferrer" className="text-sm text-pakGreen-700 hover:underline flex items-start gap-3 group">
-                                          <span className="w-5 h-5 bg-pakGreen-100 rounded-full flex items-center justify-center text-[10px] font-bold text-pakGreen-700 shrink-0 group-hover:bg-pakGreen-200 transition-colors">{i+1}</span>
-                                          <span className="leading-snug">{src.title}</span>
-                                       </a>
-                                    </li>
-                                 ))}
-                              </ul>
-                           </div>
-                        )}
-                     </div>
-                  ) : !isResearching && (
-                     <div className="flex flex-col items-center justify-center h-full text-gray-400 opacity-60">
-                        <GlobeIcon className="w-24 h-24 mb-6 stroke-1 text-gray-300" />
-                        <p className="text-xl font-medium text-gray-500 text-center max-w-md">Enter a topic above to generate a comprehensive analysis tailored for CSS aspirants.</p>
-                     </div>
-                  )}
-               </div>
-             </div>
+            <ResearchCenter
+              onSaveNote={(t, c) => {
+                setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
+                setView('NOTE_EDIT');
+              }}
+            />
           )}
 
           {view === 'NOTE_LIST' && (
