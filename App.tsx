@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown'; 
 import { Subject, Article, Note, ViewState, ResearchResult } from './types';
 import { fetchDailyArticles, researchTopic, fetchStudyMaterial } from './services/groqService';
-import { getNotes, updateStreak, StreakData } from './services/storageService';
+import { getNotes, updateStreak, StreakData, migrateNotes } from './services/storageService';
 import ArticleCard from './components/ArticleCard';
 import NoteEditor from './components/NoteEditor';
 import Sidebar from './components/Sidebar';
@@ -22,7 +23,19 @@ import ResearchCenter from './components/ResearchCenter';
 import { ArticleSkeleton } from './components/SkeletonLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import SplashScreen from './components/SplashScreen';
+import TopBar from './components/TopBar';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
+import { AuthProvider, useAuth } from './contexts/AuthContext';
+import { Toaster } from 'react-hot-toast';
+import Login from './components/auth/Login';
+import Register from './components/auth/Register';
+import ForgotPassword from './components/auth/ForgotPassword';
+import ProfileView from './components/ProfileView';
+import AdminPanel from './components/AdminPanel';
+import HistoryView from './components/HistoryView';
+import AiSummarizer from './components/AiSummarizer';
+import FlashcardGenerator from './components/FlashcardGenerator';
+import { addToHistory, logAction } from './services/historyService';
 import { 
   BookIcon, NoteIcon, PlusIcon, ChevronLeftIcon, SearchIcon, ShareIcon, 
   GlobeIcon, TrophyIcon, MenuIcon 
@@ -35,6 +48,16 @@ const OPTIONAL_SUBJECTS = [Subject.INT_RELATIONS, Subject.POLITICAL_SCIENCE, Sub
 // --- Inner App Component (inside Provider) ---
 const InnerApp: React.FC = () => {
   const { t } = useLanguage();
+  const { session, isLoading: authLoading } = useAuth();
+  
+  // Animation Variants
+  const pageVariants = {
+    initial: { opacity: 0, x: 20 },
+    animate: { opacity: 1, x: 0 },
+    exit: { opacity: 0, x: -20 }
+  };
+  const pageTransition = { duration: 0.2 };
+
   // --- State ---
   const [view, setView] = useState<ViewState>('FEED');
   const [activeSubject, setActiveSubject] = useState<Subject>(Subject.ALL);
@@ -78,20 +101,31 @@ const InnerApp: React.FC = () => {
 
   useEffect(() => { 
     // Load notes from storage on mount
-    const savedNotes = getNotes();
-    setNotes(savedNotes);
+    const loadNotes = async () => {
+      // Try migration first if user is logged in
+      if (session) {
+        await migrateNotes();
+      }
+      const savedNotes = await getNotes();
+      setNotes(savedNotes);
+    };
+    loadNotes();
 
     // Update Streak
     const currentStreak = updateStreak();
     setStreak(currentStreak);
-  }, []);
+  }, [session]); // Add session dependency to reload notes on auth change
 
   useEffect(() => {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       try {
         const s = JSON.parse(raw);
-        if (s.view) setView(s.view as ViewState);
+        // Only restore view if it's not an auth view, or if we are validating auth
+        // We'll let the auth effect handle redirection
+        if (s.view && !['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT'].includes(s.view)) {
+           setView(s.view as ViewState);
+        }
         if (s.activeSubject) setActiveSubject(s.activeSubject as Subject);
         if (s.selectedArticle) setSelectedArticle(s.selectedArticle as Article);
         if (s.resourceDetail) setResourceDetail(s.resourceDetail as { title: string; content: string });
@@ -102,6 +136,19 @@ const InnerApp: React.FC = () => {
       } catch {}
     }
   }, []);
+
+  useEffect(() => {
+    // Reset search query on view change
+    setSearchQuery('');
+    
+    if (!authLoading) {
+      if (!session && !['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT'].includes(view)) {
+        setView('AUTH_LOGIN');
+      } else if (session && ['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT'].includes(view)) {
+        setView('FEED');
+      }
+    }
+  }, [session, authLoading, view]);
 
   useEffect(() => {
     let isMounted = true;
@@ -130,7 +177,7 @@ const InnerApp: React.FC = () => {
     } catch {}
   }, [view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult, studyCache]);
 
-  const refreshNotes = () => { setNotes(getNotes()); };
+  const refreshNotes = async () => { setNotes(await getNotes()); };
 
   // --- Handlers ---
   const handleResearchRequest = async (prompt: string, title: string) => {
@@ -139,9 +186,29 @@ const InnerApp: React.FC = () => {
     setResearchQueryInput(title);
     setResearchResult(null);
     setIsResearching(true);
+
+    logAction('research_started', 'research', undefined, { query: title });
+
     const result = await researchTopic(prompt);
     setResearchResult(result);
     setIsResearching(false);
+
+    if (result) {
+       addToHistory(title, 'research', result);
+       logAction('research_completed', 'research', undefined, { query: title });
+    }
+  };
+
+  const handleHistorySelect = (item: any) => {
+    if (item.type === 'research') {
+       setView('RESEARCH');
+       setResearchQueryInput(item.query);
+       setResearchResult(item.result_snapshot);
+    } else {
+       // Fallback
+       setView('RESEARCH');
+       setResearchQueryInput(item.query);
+    }
   };
 
   const handleStudySelect = async (item: any) => {
@@ -227,6 +294,17 @@ const InnerApp: React.FC = () => {
     </div>
   );
 
+  if (authLoading) {
+     return <SplashScreen onFinish={() => {}} />;
+  }
+
+  if (!session) {
+     if (view === 'AUTH_REGISTER') return <Register onNavigate={setView} />;
+     if (view === 'AUTH_FORGOT') return <ForgotPassword onNavigate={setView} />;
+     // Default to Login for any other state if not logged in
+     return <Login onNavigate={setView} />;
+  }
+
   return (
     <div className="flex w-full h-screen supports-[height:100dvh]:h-[100dvh] bg-gray-100 overflow-hidden">
       {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
@@ -249,274 +327,415 @@ const InnerApp: React.FC = () => {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
-        {/* Mobile Header */}
-        <header className="md:hidden bg-white border-b border-gray-200 px-4 py-3 flex items-center justify-between shrink-0 z-20 shadow-sm transition-all duration-300">
-           <button onClick={() => setMobileMenuOpen(true)} className="text-gray-700 p-2 rounded-full hover:bg-gray-100 active:bg-gray-200 transition-colors">
-             <MenuIcon className="w-6 h-6" />
-           </button>
-           <span className="font-bold text-xl sm:text-2xl font-serif tracking-tight transition-all duration-300">CSS<span className="text-pakGreen-600">Prep</span></span>
-           <div className="w-10"></div> {/* Spacer for alignment */}
-        </header>
+        {/* Top Bar */}
+        {!['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT', 'NOTE_EDIT', 'QUIZ', 'ARTICLE_DETAIL'].includes(view) && (
+            <TopBar 
+                onNavigate={setView} 
+                onMenuClick={() => setMobileMenuOpen(true)}
+                title={
+                    view === 'FEED' ? t('dailyFeed') :
+                    view === 'RESEARCH' ? t('researchLab') :
+                    view === 'NOTE_LIST' ? t('myNotes') :
+                    view === 'CSS_RESOURCES' ? t('cssResources') :
+                    view === 'STUDY_MATERIAL' ? t('studyMaterial') :
+                    view === 'SYLLABUS' ? t('syllabus') :
+                    view === 'PROFILE' ? 'My Profile' :
+                    view === 'ADMIN_PANEL' ? 'Admin Panel' :
+                    view === 'SUBJECT_SELECTION' ? 'Subject Selection' :
+                    view === 'GENDER_SYLLABUS' ? 'Gender Studies' :
+                    view === 'INTERVIEW_PREP' ? 'Interview Prep' :
+                    view === 'HISTORY' ? 'History' :
+                    view === 'STUDY_TIMELINE' ? 'Timeline' :
+                    view === 'STUDY_VOCAB' ? 'Vocabulary' :
+                    view === 'STUDY_ESSAYS' ? 'Important Essays' :
+                    view === 'STUDY_ISLAMIAT' ? 'Islamiat' :
+                    view === 'RESOURCE_DETAIL' && resourceDetail ? resourceDetail.title :
+                    ''
+                }
+                searchQuery={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY'].includes(view) ? searchQuery : undefined}
+                onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY'].includes(view) ? setSearchQuery : undefined}
+                searchPlaceholder={t('searchPlaceholder')}
+                onBack={
+                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY'].includes(view) 
+                   ? () => {
+                      if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
+                      else if (view === 'GENDER_SYLLABUS') setView('CSS_RESOURCES'); // Usually accessed from CSS Resources or Syllabus? Let's check SyllabusHub. 
+                      // SyllabusHub calls onOpenGenderStudies. SyllabusHub is usually entered from StudyMaterial. 
+                      // Wait, SyllabusHub is a hub. Let's assume Back goes to StudyMaterial.
+                      // But if GenderSyllabus is opened from SyllabusHub, back should go to SyllabusHub.
+                      // Let's refine this logic.
+                      else if (view === 'SUBJECT_SELECTION') setView('CSS_RESOURCES');
+                      else if (view === 'INTERVIEW_PREP') setView('CSS_RESOURCES');
+                      else if (view === 'HISTORY') setView('RESEARCH');
+                      else if (['STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT'].includes(view)) setView('STUDY_MATERIAL');
+                      else if (view === 'RESOURCE_DETAIL') setView(previousView);
+                      else setView('FEED');
+                   } 
+                   : undefined
+                }
+                actionButton={
+                  view === 'NOTE_LIST' ? (
+                     <button onClick={() => { setNoteToEdit({ title: '', content: '' }); setView('NOTE_EDIT'); }} className="bg-pakGreen-600 text-white flex items-center gap-2 px-3 py-1.5 md:px-4 md:py-2 rounded-full font-bold shadow hover:bg-pakGreen-700 transition text-sm">
+                        <PlusIcon className="w-4 h-4 md:w-5 md:h-5" /> 
+                        <span className="hidden md:inline">{t('newNote')}</span>
+                     </button>
+                  ) : view === 'STUDY_MATERIAL' ? (
+                     <button onClick={() => setView('SYLLABUS')} className="bg-pakGreen-50 text-pakGreen-700 font-bold px-4 py-2 rounded-lg hover:bg-pakGreen-100 transition text-sm">
+                        {t('syllabus')}
+                     </button>
+                  ) : view === 'RESOURCE_DETAIL' ? (
+                     <button 
+                       onClick={() => {
+                          if (resourceDetail) {
+                             setNoteToEdit({ title: resourceDetail.title, content: resourceDetail.content, subject: Subject.PAK_AFFAIRS });
+                             setView('NOTE_EDIT');
+                          }
+                       }}
+                       className="p-2 text-pakGreen-600 hover:bg-pakGreen-50 rounded-full transition"
+                       title={t('saveNote')}
+                     >
+                       <PlusIcon className="w-6 h-6" />
+                     </button>
+                  ) : null
+                }
+            />
+        )}
 
         {/* View Content */}
         <main className="flex-1 overflow-hidden relative">
-          
-          {view === 'FEED' && (
-            <div className="h-full flex flex-col">
-              <div className="px-6 pt-4 md:pt-8 pb-2">
-                 <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif mb-1">{t('dailyIntelligence')}</h1>
-                 <p className="text-gray-500 text-sm md:text-base mb-6">{t('curatedAnalysis')}</p>
-                 {renderSubjectSelector()}
-              </div>
-              <div className="flex-1 overflow-y-auto px-6 pb-24 md:pb-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl">
-                   {loading ? (
-                      Array.from({ length: 6 }).map((_, i) => (
-                        <ArticleSkeleton key={i} />
-                      ))
-                   ) : articles.length > 0 ? (
-                      <>
-                        {articles.map(article => (
-                          <ArticleCard key={article.id} article={article} onClick={(a) => { setSelectedArticle(a); setView('ARTICLE_DETAIL'); }} />
-                        ))}
-                        <div className="col-span-full flex justify-center py-8">
-                           <button 
-                             onClick={handleLoadMore}
-                             disabled={loadingMore}
-                             className="bg-white border border-gray-200 text-gray-600 px-6 py-3 rounded-xl font-bold hover:bg-pakGreen-50 hover:text-pakGreen-700 hover:border-pakGreen-200 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2"
-                           >
-                             {loadingMore ? (
-                               <>
-                                 <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
-                                 Loading...
-                               </>
-                             ) : (
-                               <>
-                                 <PlusIcon className="w-5 h-5" /> Load More Articles
-                               </>
-                             )}
-                           </button>
-                        </div>
-                      </>
-                   ) : (
-                      <div className="col-span-full text-center py-20 text-gray-400">No updates available.</div>
-                   )}
+          <AnimatePresence mode="wait">
+            {view === 'FEED' && (
+              <motion.div
+                key="FEED"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                transition={pageTransition}
+                className="h-full flex flex-col"
+              >
+                <div className="px-6 pt-4 md:pt-8 pb-2">
+                   <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif mb-1">{t('dailyIntelligence')}</h1>
+                   <p className="text-gray-500 text-sm md:text-base mb-6">{t('curatedAnalysis')}</p>
+                   {renderSubjectSelector()}
                 </div>
-              </div>
-            </div>
-          )}
-
-          {view === 'ARTICLE_DETAIL' && selectedArticle && (
-            <div className="h-full overflow-y-auto bg-white animate-slide-up">
-              <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-6 py-4 flex justify-between items-center">
-                 <button onClick={() => setView('FEED')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full text-gray-600">
-                    <ChevronLeftIcon className="w-6 h-6" />
-                 </button>
-                 <div className="flex gap-2">
-                   <button onClick={() => {
-                      if (navigator.share) navigator.share({ title: selectedArticle.title, text: selectedArticle.summary, url: window.location.href });
-                   }} className="p-2 hover:bg-gray-100 rounded-full text-gray-600">
-                      <ShareIcon className="w-5 h-5" />
-                   </button>
-                   <button onClick={() => {
-                      setNoteToEdit({ title: `Notes: ${selectedArticle.title}`, content: `Source: ${selectedArticle.source}\n\n${selectedArticle.content}`, subject: selectedArticle.subject });
-                      setView('NOTE_EDIT');
-                   }} className="bg-pakGreen-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-pakGreen-700 transition">
-                      {t('saveNote')}
-                   </button>
-                 </div>
-              </div>
-              <div className="max-w-3xl mx-auto px-6 py-8">
-                 <span className="text-pakGreen-600 font-bold uppercase text-xs tracking-wider mb-2 block">{selectedArticle.subject}</span>
-                 <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 leading-tight">{selectedArticle.title}</h1>
-                 <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
-                    <span>{selectedArticle.source}</span>
-                    <span>&bull;</span>
-                    <span>{selectedArticle.readTime} {t('readTime')}</span>
-                    <span>&bull;</span>
-                    <span>{selectedArticle.date}</span>
-                 </div>
-                 <div className="prose prose-lg prose-pakGreen max-w-none font-serif text-gray-800">
-                    <ReactMarkdown>{selectedArticle.content}</ReactMarkdown>
-                 </div>
-              </div>
-            </div>
-          )}
-
-          {view === 'QUIZ' && (
-            <QuizView 
-              onExit={() => setView('FEED')} 
-              onSaveNote={(t, c) => {
-                 setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
-                 setView('NOTE_EDIT');
-              }}
-            />
-          )}
-
-          {view === 'STUDY_MATERIAL' && (
-            <StudyMaterialView 
-              onSelect={handleStudySelect} 
-              onOpenSyllabus={() => setView('SYLLABUS')} 
-            />
-          )}
-
-          {view === 'STUDY_TIMELINE' && (
-            <StudyTimelineView
-              items={studyCache[activeStudyId] || []}
-              isLoading={loading}
-              onBack={() => setView('STUDY_MATERIAL')}
-              onSaveNote={(t, c) => {
-                setNoteToEdit({ title: t, content: c, subject: Subject.CURRENT_AFFAIRS });
-                setView('NOTE_EDIT');
-              }}
-              onUpdateItems={handleStudyUpdate}
-            />
-          )}
-
-          {view === 'STUDY_VOCAB' && (
-            <StudyVocabView
-              items={studyCache[activeStudyId] || []}
-              isLoading={loading}
-              onBack={() => setView('STUDY_MATERIAL')}
-              onSaveNote={(t, c) => {
-                setNoteToEdit({ title: t, content: c, subject: Subject.ESSAY }); // Vocab usually falls under Essay/English
-                setView('NOTE_EDIT');
-              }}
-            />
-          )}
-
-          {view === 'STUDY_ESSAYS' && (
-            <StudyEssaysView
-              items={studyCache[activeStudyId] || []}
-              isLoading={loading}
-              onBack={() => setView('STUDY_MATERIAL')}
-              onSaveNote={(t, c) => {
-                setNoteToEdit({ title: t, content: c, subject: Subject.ESSAY });
-                setView('NOTE_EDIT');
-              }}
-              onUpdateItems={handleStudyUpdate}
-            />
-          )}
-
-          {view === 'STUDY_ISLAMIAT' && (
-            <StudyIslamiatView
-              items={studyCache[activeStudyId] || []}
-              isLoading={loading}
-              onBack={() => setView('STUDY_MATERIAL')}
-              onSaveNote={(t, c) => {
-                setNoteToEdit({ title: t, content: c, subject: Subject.ISLAMIAT });
-                setView('NOTE_EDIT');
-              }}
-              onUpdateItems={handleStudyUpdate}
-            />
-          )}
-
-          {view === 'CSS_RESOURCES' && (
-            <CssResourcesView 
-              onSelect={handleResourceRequest} 
-              onOpenInterviewPrep={() => setView('INTERVIEW_PREP')}
-              onOpenSubjectSelection={() => setView('SUBJECT_SELECTION')}
-            />
-          )}
-
-          {view === 'INTERVIEW_PREP' && (
-            <InterviewPreparation onBack={() => setView('CSS_RESOURCES')} />
-          )}
-
-          {view === 'SUBJECT_SELECTION' && (
-            <SubjectSelectionGuide onBack={() => setView('CSS_RESOURCES')} />
-          )}
-
-          {view === 'SYLLABUS' && (
-            <SyllabusHub 
-              onBack={() => setView('STUDY_MATERIAL')} 
-              onOpenGenderStudies={() => setView('GENDER_SYLLABUS')} 
-            />
-          )}
-
-          {view === 'RESOURCE_DETAIL' && resourceDetail && (
-            <ResourceDetailView
-              title={resourceDetail.title}
-              content={resourceDetail.content}
-              isLoading={loading}
-              onBack={() => setView(previousView)}
-              onSaveNote={(t, c) => {
-                 setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
-                 setView('NOTE_EDIT');
-              }}
-            />
-          )}
-
-          {view === 'GENDER_SYLLABUS' && (
-            <GenderStudiesSyllabus
-              onBack={() => setView('CSS_RESOURCES')}
-              onSaveNote={(t, c) => {
-                setNoteToEdit({ title: t, content: c, subject: Subject.GENDER_STUDIES });
-                setView('NOTE_EDIT');
-              }}
-            />
-          )}
-
-          {view === 'RESEARCH' && (
-            <ResearchCenter
-              onSaveNote={(t, c) => {
-                setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
-                setView('NOTE_EDIT');
-              }}
-            />
-          )}
-
-          {view === 'NOTE_LIST' && (
-             <div className="h-full flex flex-col bg-gray-50">
-               <div className="px-4 md:px-6 py-6 md:py-8 bg-white border-b border-gray-100">
-                  <div className="flex justify-between items-center mb-6 max-w-5xl mx-auto">
-                     <h1 className="text-2xl md:text-3xl font-bold font-serif text-gray-900">{t('myNotes')}</h1>
-                     <button onClick={() => { setNoteToEdit({ title: '', content: '' }); setView('NOTE_EDIT'); }} className="bg-pakGreen-600 text-white flex items-center gap-2 px-4 py-2 md:px-5 md:py-2.5 rounded-full font-bold shadow-lg shadow-pakGreen-200 hover:bg-pakGreen-700 transition active:scale-95">
-                        <PlusIcon className="w-5 h-5" /> 
-                        <span className="text-sm md:text-base">{t('newNote')}</span>
-                     </button>
-                  </div>
-                  <div className="max-w-5xl mx-auto relative">
-                     <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-                     <input 
-                        className="w-full bg-gray-100 border-none rounded-xl py-3 pl-12 pr-4 text-[16px] md:text-base focus:ring-2 focus:ring-pakGreen-500 shadow-sm"
-                        placeholder={t('searchPlaceholder')}
-                        value={searchQuery}
-                        onChange={e => setSearchQuery(e.target.value)}
-                     />
-                  </div>
-               </div>
-               <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8">
-                  <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                     {notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
-                        notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())).map(note => (
-                           <div key={note.id} onClick={() => { setNoteToEdit(note); setView('NOTE_EDIT'); }} className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group h-60 md:h-64 flex flex-col active:scale-[0.99] transition-transform">
-                              <div className="flex justify-between items-start mb-2">
-                                 {note.subject ? <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{note.subject}</span> : <span></span>}
-                                 <span className="text-[10px] md:text-xs text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
-                              </div>
-                              <h3 className="font-bold text-lg md:text-xl text-gray-800 mb-2 md:mb-3 line-clamp-2 font-serif group-hover:text-pakGreen-700 transition-colors">{note.title}</h3>
-                              <p className="text-sm md:text-base text-gray-500 line-clamp-4 font-serif leading-relaxed flex-1">
-                                 {note.content.replace(/[#*`_]/g, '')}
-                              </p>
-                           </div>
+                <div className="flex-1 overflow-y-auto px-6 pb-24 md:pb-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl">
+                     {loading ? (
+                        Array.from({ length: 6 }).map((_, i) => (
+                          <ArticleSkeleton key={i} />
                         ))
+                     ) : articles.length > 0 ? (
+                        <>
+                          {articles.map(article => (
+                            <ArticleCard key={article.id} article={article} onClick={(a) => { setSelectedArticle(a); setView('ARTICLE_DETAIL'); }} />
+                          ))}
+                          <div className="col-span-full flex justify-center py-8">
+                             <button 
+                               onClick={handleLoadMore}
+                               disabled={loadingMore}
+                               className="bg-white border border-gray-200 text-gray-600 px-6 py-3 rounded-xl font-bold hover:bg-pakGreen-50 hover:text-pakGreen-700 hover:border-pakGreen-200 transition-all shadow-sm disabled:opacity-50 flex items-center gap-2"
+                             >
+                               {loadingMore ? (
+                                 <>
+                                   <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin"></div>
+                                   Loading...
+                                 </>
+                               ) : (
+                                 <>
+                                   <PlusIcon className="w-5 h-5" /> Load More Articles
+                                 </>
+                               )}
+                             </button>
+                          </div>
+                        </>
                      ) : (
-                        <div className="col-span-full text-center py-20 text-gray-400">{t('noNotes')}</div>
+                        <div className="col-span-full text-center py-20 text-gray-400">No updates available.</div>
                      )}
                   </div>
-               </div>
-             </div>
-          )}
-          
-          {view === 'NOTE_EDIT' && (
-             <NoteEditor 
-               initialNote={noteToEdit} 
-               onClose={() => { setView('NOTE_LIST'); setNoteToEdit(null); }} 
-               onSave={() => { refreshNotes(); setNoteToEdit(null); setView('NOTE_LIST'); }} 
-             />
-          )}
+                </div>
+              </motion.div>
+            )}
 
+            {view === 'ARTICLE_DETAIL' && selectedArticle && (
+              <motion.div
+                key="ARTICLE_DETAIL"
+                initial={{ opacity: 0, y: "100%" }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: "100%" }}
+                transition={{ type: "spring", damping: 25, stiffness: 200 }}
+                className="h-full overflow-y-auto bg-white"
+              >
+                <div className="sticky top-0 z-10 bg-white/95 backdrop-blur border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+                   <button onClick={() => setView('FEED')} className="p-2 -ml-2 hover:bg-gray-100 rounded-full text-gray-600">
+                      <ChevronLeftIcon className="w-6 h-6" />
+                   </button>
+                   <div className="flex gap-2">
+                     <button onClick={() => {
+                        if (navigator.share) navigator.share({ title: selectedArticle.title, text: selectedArticle.summary, url: window.location.href });
+                     }} className="p-2 hover:bg-gray-100 rounded-full text-gray-600">
+                        <ShareIcon className="w-5 h-5" />
+                     </button>
+                     <button onClick={() => {
+                        setNoteToEdit({ title: `Notes: ${selectedArticle.title}`, content: `Source: ${selectedArticle.source}\n\n${selectedArticle.content}`, subject: selectedArticle.subject });
+                        setView('NOTE_EDIT');
+                     }} className="bg-pakGreen-600 text-white px-4 py-2 rounded-lg text-sm font-bold shadow hover:bg-pakGreen-700 transition">
+                        {t('saveNote')}
+                     </button>
+                   </div>
+                </div>
+                <div className="max-w-3xl mx-auto px-6 py-8">
+                   <span className="text-pakGreen-600 font-bold uppercase text-xs tracking-wider mb-2 block">{selectedArticle.subject}</span>
+                   <h1 className="text-3xl md:text-4xl font-serif font-bold text-gray-900 mb-4 leading-tight">{selectedArticle.title}</h1>
+                   <div className="flex flex-wrap gap-4 text-sm text-gray-500 mb-8 pb-8 border-b border-gray-100">
+                      <span>{selectedArticle.source}</span>
+                      <span>&bull;</span>
+                      <span>{selectedArticle.readTime} {t('readTime')}</span>
+                      <span>&bull;</span>
+                      <span>{selectedArticle.date}</span>
+                   </div>
+                   <div className="prose prose-lg prose-pakGreen max-w-none font-serif text-gray-800">
+                      <ReactMarkdown>{selectedArticle.content}</ReactMarkdown>
+                   </div>
+                </div>
+              </motion.div>
+            )}
+
+            {view === 'QUIZ' && (
+              <motion.div key="QUIZ" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <QuizView 
+                  onExit={() => setView('FEED')} 
+                  onSaveNote={(t, c) => {
+                     setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
+                     setView('NOTE_EDIT');
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {view === 'STUDY_MATERIAL' && (
+              <motion.div key="STUDY_MATERIAL" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <StudyMaterialView 
+                  onSelect={handleStudySelect} 
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'STUDY_TIMELINE' && (
+              <motion.div key="STUDY_TIMELINE" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <StudyTimelineView
+                  items={studyCache[activeStudyId] || []}
+                  isLoading={loading}
+                  onBack={() => setView('STUDY_MATERIAL')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.CURRENT_AFFAIRS });
+                    setView('NOTE_EDIT');
+                  }}
+                  onUpdateItems={handleStudyUpdate}
+                />
+              </motion.div>
+            )}
+
+            {view === 'STUDY_VOCAB' && (
+              <motion.div key="STUDY_VOCAB" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <StudyVocabView
+                  items={studyCache[activeStudyId] || []}
+                  isLoading={loading}
+                  onBack={() => setView('STUDY_MATERIAL')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.ESSAY }); 
+                    setView('NOTE_EDIT');
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {view === 'STUDY_ESSAYS' && (
+              <motion.div key="STUDY_ESSAYS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <StudyEssaysView
+                  items={studyCache[activeStudyId] || []}
+                  isLoading={loading}
+                  onBack={() => setView('STUDY_MATERIAL')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.ESSAY });
+                    setView('NOTE_EDIT');
+                  }}
+                  onUpdateItems={handleStudyUpdate}
+                />
+              </motion.div>
+            )}
+
+            {view === 'STUDY_ISLAMIAT' && (
+              <motion.div key="STUDY_ISLAMIAT" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <StudyIslamiatView
+                  items={studyCache[activeStudyId] || []}
+                  isLoading={loading}
+                  onBack={() => setView('STUDY_MATERIAL')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.ISLAMIAT });
+                    setView('NOTE_EDIT');
+                  }}
+                  onUpdateItems={handleStudyUpdate}
+                />
+              </motion.div>
+            )}
+
+            {view === 'CSS_RESOURCES' && (
+              <motion.div key="CSS_RESOURCES" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <CssResourcesView 
+                  onSelect={handleResourceRequest} 
+                  onOpenInterviewPrep={() => setView('INTERVIEW_PREP')}
+                  onOpenSubjectSelection={() => setView('SUBJECT_SELECTION')}
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'INTERVIEW_PREP' && (
+              <motion.div key="INTERVIEW_PREP" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <InterviewPreparation onBack={() => setView('CSS_RESOURCES')} />
+              </motion.div>
+            )}
+
+            {view === 'SUBJECT_SELECTION' && (
+              <motion.div key="SUBJECT_SELECTION" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <SubjectSelectionGuide onBack={() => setView('CSS_RESOURCES')} />
+              </motion.div>
+            )}
+
+            {view === 'SYLLABUS' && (
+              <motion.div key="SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <SyllabusHub 
+                  onBack={() => setView('STUDY_MATERIAL')} 
+                  onOpenGenderStudies={() => setView('GENDER_SYLLABUS')} 
+                />
+              </motion.div>
+            )}
+
+            {view === 'RESOURCE_DETAIL' && resourceDetail && (
+              <motion.div key="RESOURCE_DETAIL" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <ResourceDetailView
+                  title={resourceDetail.title}
+                  content={resourceDetail.content}
+                  isLoading={loading}
+                  onBack={() => setView(previousView)}
+                  onSaveNote={(t, c) => {
+                     setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
+                     setView('NOTE_EDIT');
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {view === 'GENDER_SYLLABUS' && (
+              <motion.div key="GENDER_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <GenderStudiesSyllabus
+                  onBack={() => setView('CSS_RESOURCES')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.GENDER_STUDIES });
+                    setView('NOTE_EDIT');
+                  }}
+                />
+              </motion.div>
+            )}
+
+            {view === 'RESEARCH' && (
+              <motion.div key="RESEARCH" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <ResearchCenter
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
+                    setView('NOTE_EDIT');
+                  }}
+                  onHistory={() => setView('HISTORY')}
+                />
+              </motion.div>
+            )}
+
+            {view === 'HISTORY' && (
+               <motion.div key="HISTORY" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                 <HistoryView 
+                   onBack={() => setView('RESEARCH')} 
+                   onSelect={handleHistorySelect} 
+                   searchQuery={searchQuery}
+                 />
+               </motion.div>
+            )}
+
+            {view === 'PROFILE' && (
+              <motion.div key="PROFILE" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <ProfileView onBack={() => setView('FEED')} />
+              </motion.div>
+            )}
+
+            {view === 'ADMIN_PANEL' && (
+               <motion.div key="ADMIN_PANEL" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                 <AdminPanel onBack={() => setView('FEED')} />
+               </motion.div>
+            )}
+
+            {view === 'AI_SUMMARIZER' && (
+              <motion.div key="AI_SUMMARIZER" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <AiSummarizer />
+              </motion.div>
+            )}
+
+            {view === 'FLASHCARDS' && (
+              <motion.div key="FLASHCARDS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <FlashcardGenerator />
+              </motion.div>
+            )}
+
+            {view === 'NOTE_LIST' && (
+               <motion.div
+                 key="NOTE_LIST"
+                 initial="initial"
+                 animate="animate"
+                 exit="exit"
+                 variants={pageVariants}
+                 transition={pageTransition}
+                 className="h-full flex flex-col bg-gray-50"
+               >
+                   <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8">
+                      <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                         {notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())).length > 0 ? (
+                            notes.filter(n => n.title.toLowerCase().includes(searchQuery.toLowerCase()) || n.content.toLowerCase().includes(searchQuery.toLowerCase())).map(note => (
+                               <div key={note.id} onClick={() => { setNoteToEdit(note); setView('NOTE_EDIT'); }} className="bg-white p-4 md:p-5 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow cursor-pointer group h-60 md:h-64 flex flex-col active:scale-[0.99] transition-transform">
+                                  <div className="flex justify-between items-start mb-2">
+                                     {note.subject ? <span className="bg-gray-100 text-gray-600 text-[10px] font-bold px-2 py-1 rounded-full uppercase">{note.subject}</span> : <span></span>}
+                                     <span className="text-[10px] md:text-xs text-gray-400">{new Date(note.updatedAt).toLocaleDateString()}</span>
+                                  </div>
+                                  <h3 className="font-bold text-lg md:text-xl text-gray-800 mb-2 md:mb-3 line-clamp-2 font-serif group-hover:text-pakGreen-700 transition-colors">{note.title}</h3>
+                                  <p className="text-sm md:text-base text-gray-500 line-clamp-4 font-serif leading-relaxed flex-1">
+                                     {note.content.replace(/[#*`_]/g, '')}
+                                  </p>
+                               </div>
+                            ))
+                         ) : (
+                            <div className="col-span-full text-center py-20 text-gray-400">{t('noNotes')}</div>
+                         )}
+                      </div>
+                   </div>
+               </motion.div>
+            )}
+            
+            {view === 'NOTE_EDIT' && (
+               <motion.div 
+                 key="NOTE_EDIT"
+                 initial={{ opacity: 0, scale: 0.95 }}
+                 animate={{ opacity: 1, scale: 1 }}
+                 exit={{ opacity: 0, scale: 0.95 }}
+                 transition={{ duration: 0.2 }}
+                 className="absolute inset-0 z-50 bg-white"
+               >
+                 <NoteEditor 
+                   initialNote={noteToEdit} 
+                   onClose={() => { setView('NOTE_LIST'); setNoteToEdit(null); }} 
+                   onSave={() => { refreshNotes(); setNoteToEdit(null); setView('NOTE_LIST'); }} 
+                 />
+               </motion.div>
+            )}
+          </AnimatePresence>
         </main>
 
         {/* Mobile Bottom Nav */}
@@ -548,9 +767,12 @@ const InnerApp: React.FC = () => {
 const App: React.FC = () => {
   return (
     <ErrorBoundary>
-      <LanguageProvider>
-        <InnerApp />
-      </LanguageProvider>
+      <AuthProvider>
+        <LanguageProvider>
+          <Toaster position="top-right" />
+          <InnerApp />
+        </LanguageProvider>
+      </AuthProvider>
     </ErrorBoundary>
   );
 };

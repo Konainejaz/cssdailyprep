@@ -90,17 +90,6 @@ ${item.keyTakeaways?.map(k => `- ${k}`).join('\n') || ''}
 
   return (
     <div className="h-full flex flex-col bg-gray-50 relative">
-      {/* Header */}
-      <div className="px-6 py-6 bg-white border-b border-gray-100 flex items-center gap-4 sticky top-0 z-10 shadow-sm">
-        <button onClick={onBack} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-          <ChevronLeftIcon className="w-6 h-6" />
-        </button>
-        <div>
-          <h1 className="text-xl md:text-2xl font-bold font-serif text-gray-900">Key Quranic Verses & Hadiths</h1>
-          <p className="text-sm text-gray-500">For Islamiat CSS Topics</p>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="flex-1 overflow-y-auto px-4 md:px-8 py-8">
         <div className="max-w-4xl mx-auto grid grid-cols-1 gap-6">

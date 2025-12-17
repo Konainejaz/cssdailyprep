@@ -6,7 +6,7 @@ interface Props {
   onSaveNote: (title: string, content: string) => void;
 }
 
-const GenderStudiesSyllabus: React.FC<Props> = ({ onBack, onSaveNote }) => {
+const GenderStudiesSyllabus: React.FC<Props & { searchQuery?: string }> = ({ onBack, onSaveNote, searchQuery = '' }) => {
   const sections = useMemo(() => ([
     {
       key: 'intro',
@@ -116,7 +116,6 @@ const GenderStudiesSyllabus: React.FC<Props> = ({ onBack, onSaveNote }) => {
     },
   ]), []);
 
-  const [search, setSearch] = useState('');
   const [open, setOpen] = useState<string[]>(sections.map(s => s.key));
 
   const toggle = (key: string) => {
@@ -124,8 +123,8 @@ const GenderStudiesSyllabus: React.FC<Props> = ({ onBack, onSaveNote }) => {
   };
 
   const filteredSections = sections.filter(sec =>
-    sec.title.toLowerCase().includes(search.toLowerCase()) ||
-    sec.items.some(i => i.toLowerCase().includes(search.toLowerCase()))
+    sec.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    sec.items.some(i => i.toLowerCase().includes(searchQuery.toLowerCase()))
   );
 
   const saveAll = () => {
@@ -143,32 +142,10 @@ const GenderStudiesSyllabus: React.FC<Props> = ({ onBack, onSaveNote }) => {
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      <div className="px-6 py-6 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          <button onClick={onBack} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0">
-            <ChevronLeftIcon className="w-6 h-6" />
-          </button>
-          <h1 className="text-xl md:text-2xl font-bold font-serif text-gray-900 truncate">Gender Studies • CSS Optional Syllabus</h1>
-        </div>
-        <button onClick={saveAll} className="p-2 text-pakGreen-600 hover:bg-pakGreen-50 rounded-full transition-colors flex-shrink-0 ml-2" title="Save All to Notes">
-          <PlusIcon className="w-6 h-6" />
-        </button>
-      </div>
-
-      <div className="px-6 py-4 bg-white border-b border-gray-100">
-        <div className="relative max-w-2xl">
-          <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-          <input
-            className="w-full bg-gray-100 border-none rounded-xl py-3 pl-12 pr-4 text-base focus:ring-2 focus:ring-pakGreen-500"
-            placeholder="Search sections or topics"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-          />
-        </div>
-        <div className="mt-3 flex gap-2">
-          <button onClick={() => setOpen(sections.map(s => s.key))} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 hover:bg-gray-200">Expand All</button>
-          <button onClick={() => setOpen([])} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 hover:bg-gray-200">Collapse All</button>
-        </div>
+      
+      <div className="px-6 py-2 bg-white border-b border-gray-100 flex justify-end gap-2">
+        <button onClick={() => setOpen(sections.map(s => s.key))} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">Expand All</button>
+        <button onClick={() => setOpen([])} className="px-3 py-1.5 text-xs font-bold rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-600 transition-colors">Collapse All</button>
       </div>
 
       <div className="flex-1 overflow-y-auto px-4 md:px-8 py-8">

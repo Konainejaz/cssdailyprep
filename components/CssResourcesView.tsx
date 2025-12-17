@@ -1,21 +1,19 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { CSS_RESOURCES } from '../constants';
-import { SearchIcon, GlobeIcon } from './Icons';
-import { useLanguage } from '../contexts/LanguageContext';
+import { GlobeIcon } from './Icons';
 
 interface Props {
   onSelect: (prompt: string, title: string, context?: string) => void;
   onOpenInterviewPrep: () => void;
   onOpenSubjectSelection: () => void;
+  searchQuery?: string;
 }
 
-const CssResourcesView: React.FC<Props> = ({ onSelect, onOpenInterviewPrep, onOpenSubjectSelection }) => {
-  const { t } = useLanguage();
-  const [search, setSearch] = useState('');
-
+const CssResourcesView: React.FC<Props> = ({ onSelect, onOpenInterviewPrep, onOpenSubjectSelection, searchQuery = '' }) => {
+  
   const filtered = CSS_RESOURCES.filter(m => 
-    m.title.toLowerCase().includes(search.toLowerCase()) || 
-    m.category.toLowerCase().includes(search.toLowerCase())
+    m.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    m.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const handleClick = (item: typeof CSS_RESOURCES[0]) => {
@@ -30,18 +28,6 @@ const CssResourcesView: React.FC<Props> = ({ onSelect, onOpenInterviewPrep, onOp
 
   return (
     <div className="h-full flex flex-col bg-white">
-      <div className="px-4 md:px-6 py-6 md:py-8 bg-gray-50 border-b border-gray-100">
-        <h1 className="text-2xl md:text-3xl font-bold font-serif text-gray-900 mb-4 md:mb-6">{t('cssResources')}</h1>
-        <div className="relative max-w-2xl">
-           <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-           <input 
-              className="w-full bg-white border-gray-200 rounded-xl py-3 pl-12 pr-4 text-[16px] md:text-base focus:ring-2 focus:ring-pakGreen-500 shadow-sm"
-              placeholder={t('searchPlaceholder')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-           />
-        </div>
-      </div>
       <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 md:py-8">
         <div className="max-w-4xl space-y-4">
           {filtered.map(item => (

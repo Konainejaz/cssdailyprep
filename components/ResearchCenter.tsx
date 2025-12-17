@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { ResearchResult, MindMapNode } from '../types';
 import { researchTopic, researchWithImages } from '../services/groqService';
+import { addToHistory } from '../services/historyService';
 import { SearchIcon, PlusIcon, CrossIcon, NoteIcon, GlobeIcon, BookIcon } from './Icons';
 
 // --- Icons ---
@@ -87,9 +88,10 @@ const MindMapTree: React.FC<{ node: MindMapNode; depth?: number }> = ({ node, de
 
 interface Props {
   onSaveNote: (title: string, content: string) => void;
+  onHistory: () => void;
 }
 
-const ResearchCenter: React.FC<Props> = ({ onSaveNote }) => {
+const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
   const [query, setQuery] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isResearching, setIsResearching] = useState(false);
@@ -164,6 +166,11 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote }) => {
         res = await researchTopic(searchQuery);
       }
       setResult(res);
+      
+      if (res) {
+        addToHistory(searchQuery || "Image Analysis", 'research', res);
+      }
+
       if (res?.mindMap) {
         setViewMode('MINDMAP');
       }
@@ -190,14 +197,22 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote }) => {
            <span className="bg-pakGreen-100 p-1.5 rounded-lg text-pakGreen-700"><SparklesIcon className="w-5 h-5"/></span>
            CSS Research Lab
          </h1>
-         {result && (
+         <div className="flex gap-4 items-center">
             <button 
-              onClick={() => { setResult(null); setQuery(''); setImages([]); }}
+              onClick={onHistory}
               className="text-sm font-medium text-gray-500 hover:text-pakGreen-600 transition-colors flex items-center gap-1"
             >
-              <PlusIcon className="w-4 h-4 rotate-45" /> New Search
+              <BookIcon className="w-4 h-4" /> History
             </button>
-         )}
+            {result && (
+              <button 
+                onClick={() => { setResult(null); setQuery(''); setImages([]); }}
+                className="text-sm font-medium text-gray-500 hover:text-pakGreen-600 transition-colors flex items-center gap-1"
+              >
+                <PlusIcon className="w-4 h-4 rotate-45" /> New Search
+              </button>
+            )}
+         </div>
       </div>
 
       {/* Main Content Area */}
@@ -362,16 +377,16 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote }) => {
                   </div>
 
                   {viewMode === 'ANALYSIS' ? (
-                    <div className="p-6 md:p-12">
+                    <div className="p-4 md:p-12">
                        <article className="prose prose-lg prose-pakGreen max-w-none font-serif text-gray-700 leading-relaxed">
-                          <h1 className="text-3xl md:text-4xl font-bold text-gray-900 mb-8 pb-6 border-b border-gray-100">{result.query}</h1>
+                          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-8 pb-6 border-b border-gray-100">{result.query}</h1>
                           <ReactMarkdown 
                              components={{
-                               h1: ({node, ...props}) => <h2 className="text-2xl font-bold mt-8 mb-4 text-gray-900" {...props} />,
-                               h2: ({node, ...props}) => <h3 className="text-xl font-bold mt-6 mb-3 text-gray-800" {...props} />,
-                               p: ({node, ...props}) => <p className="mb-4 text-gray-600 leading-7" {...props} />,
+                               h1: ({node, ...props}) => <h2 className="text-xl md:text-2xl font-bold mt-8 mb-4 text-gray-900" {...props} />,
+                               h2: ({node, ...props}) => <h3 className="text-lg md:text-xl font-bold mt-6 mb-3 text-gray-800" {...props} />,
+                               p: ({node, ...props}) => <p className="mb-4 text-gray-600 leading-7 text-base md:text-lg" {...props} />,
                                ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
-                               li: ({node, ...props}) => <li className="text-gray-600" {...props} />,
+                               li: ({node, ...props}) => <li className="text-gray-600 text-base md:text-lg" {...props} />,
                                strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
                              }}
                           >

@@ -10,15 +10,6 @@ const SyllabusHub: React.FC<Props> = ({ onBack, onOpenGenderStudies }) => {
   const [open, setOpen] = useState<'opt' | 'comp' | null>('opt');
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      <div className="px-6 py-6 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          <button onClick={onBack} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0">
-            <ChevronLeftIcon className="w-6 h-6" />
-          </button>
-          <h1 className="text-xl md:text-2xl font-bold font-serif text-gray-900 truncate">Syllabus</h1>
-        </div>
-      </div>
-
       <div className="flex-1 overflow-y-auto px-4 md:px-8 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Optional Syllabus */}

@@ -9,9 +9,12 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.88.0",
+    "framer-motion": "^12.23.26",
     "groq-sdk": "^0.37.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-hot-toast": "^2.6.0",
     "react-markdown": "^10.1.0"
   },
   "devDependencies": {

@@ -28,18 +28,8 @@ const StudyVocabView: React.FC<Props> = ({ items, isLoading, onBack, onSaveNote 
 
   return (
     <div className="h-full flex flex-col bg-gray-50 overflow-hidden">
-      {/* Header */}
-      <div className="px-6 py-4 bg-white border-b border-gray-100 flex items-center gap-4 shadow-sm z-10 shrink-0">
-        <button onClick={onBack} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors">
-          <ChevronLeftIcon className="w-6 h-6" />
-        </button>
-        <div>
-          <h1 className="text-xl font-bold font-serif text-gray-900">Vocabulary</h1>
-          <p className="text-xs text-gray-500">High-Frequency Words</p>
-        </div>
-      </div>
-
-      {/* Main Content Area */}
+      
+      {/* Search & Filter - Moved outside header, simplified */}
       <div className="flex-1 flex flex-col items-center justify-center p-4 min-h-0 relative">
         {isLoading ? (
           <div className="w-full max-w-md aspect-[3/4] bg-white rounded-3xl shadow-lg animate-pulse border border-gray-100 flex items-center justify-center">

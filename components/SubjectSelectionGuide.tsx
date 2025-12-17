@@ -16,19 +16,6 @@ const SubjectSelectionGuide: React.FC<Props> = ({ onBack }) => {
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="px-6 py-6 bg-white border-b border-gray-100 flex items-center justify-between sticky top-0 z-10 shadow-sm">
-        <div className="flex items-center gap-4 flex-1 min-w-0">
-          <button onClick={onBack} className="p-2 -ml-2 text-gray-500 hover:bg-gray-100 rounded-full transition-colors flex-shrink-0">
-            <ChevronLeftIcon className="w-6 h-6" />
-          </button>
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold font-serif text-gray-900 truncate">Subject Selection Guide</h1>
-            <p className="text-sm text-gray-500">Master the Art of Optional Subjects</p>
-          </div>
-        </div>
-      </div>
-
       {/* Navigation Tabs */}
       <div className="bg-white border-b border-gray-100 overflow-x-auto">
         <div className="flex px-6 gap-6 min-w-max">

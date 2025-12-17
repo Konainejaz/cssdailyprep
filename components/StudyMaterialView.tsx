@@ -1,16 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { STUDY_MATERIALS } from '../constants';
-import { SearchIcon, CheckIcon } from './Icons';
-import { useLanguage } from '../contexts/LanguageContext';
+import { CheckIcon } from './Icons';
 
 interface Props {
   onSelect: (item: typeof STUDY_MATERIALS[0]) => void;
-  onOpenSyllabus?: () => void;
+  searchQuery?: string;
 }
 
-const StudyMaterialView: React.FC<Props> = ({ onSelect, onOpenSyllabus }) => {
-  const { t } = useLanguage();
-  const [search, setSearch] = useState('');
+const StudyMaterialView: React.FC<Props> = ({ onSelect, searchQuery = '' }) => {
   const [completed, setCompleted] = useState<string[]>([]);
 
   useEffect(() => {
@@ -28,34 +25,12 @@ const StudyMaterialView: React.FC<Props> = ({ onSelect, onOpenSyllabus }) => {
   };
 
   const filtered = STUDY_MATERIALS.filter(m => 
-    m.title.toLowerCase().includes(search.toLowerCase()) || 
-    m.category.toLowerCase().includes(search.toLowerCase())
+    m.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+    m.category.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      <div className="px-6 py-8 bg-white border-b border-gray-100">
-        <h1 className="text-3xl font-bold font-serif text-gray-900 mb-6">{t('studyMaterial')}</h1>
-        <div className="relative max-w-2xl">
-           <SearchIcon className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5" />
-           <input 
-              className="w-full bg-gray-100 border-none rounded-xl py-3 pl-12 pr-4 text-base focus:ring-2 focus:ring-pakGreen-500"
-              placeholder={t('searchPlaceholder')}
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-           />
-        </div>
-        {onOpenSyllabus && (
-          <div className="mt-4">
-            <button 
-              onClick={onOpenSyllabus}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-pakGreen-600 text-white text-sm font-bold shadow hover:bg-pakGreen-700"
-            >
-              {t('syllabus')}
-            </button>
-          </div>
-        )}
-      </div>
       <div className="flex-1 overflow-y-auto px-6 py-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {filtered.map(item => (

@@ -1,11 +1,13 @@
 
 import React, { useEffect, useState } from 'react';
+import { useAuth } from '../contexts/AuthContext';
 
 interface SplashScreenProps {
   onFinish: () => void;
 }
 
 const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
+  const { profile } = useAuth();
   const [show, setShow] = useState(true);
   const [animateOut, setAnimateOut] = useState(false);
 
@@ -58,7 +60,7 @@ const SplashScreen: React.FC<SplashScreenProps> = ({ onFinish }) => {
         </div>
         <div>
           <h1 className="text-6xl md:text-8xl font-cursive text-pakGreen-600 font-bold animate-custom-slide opacity-0 drop-shadow-sm" style={{ animationDelay: '0.6s' }}>
-            Heer
+            {profile?.full_name ? profile.full_name[0].toUpperCase() + profile.full_name.slice(1) : 'CSS Prep'}
           </h1>
         </div>
         

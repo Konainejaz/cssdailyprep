@@ -31,11 +31,11 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ initialNote, onClose, onSave })
     element.style.height = element.scrollHeight + 'px';
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!title.trim()) return;
 
     const newNote: Note = {
-      id: initialNote?.id || Date.now().toString(),
+      id: initialNote?.id || Date.now().toString(), // Should ideally be UUID for Supabase but let's see if we can generate one or let DB handle
       title,
       content,
       subject: (subject as Subject) || undefined,
@@ -44,14 +44,14 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ initialNote, onClose, onSave })
       linkedArticleId: initialNote?.linkedArticleId
     };
 
-    saveNote(newNote);
+    await saveNote(newNote);
     onSave();
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (initialNote?.id) {
       if (confirm('Are you sure you want to delete this note?')) {
-        deleteNote(initialNote.id);
+        await deleteNote(initialNote.id);
         onSave(); 
       }
     }
