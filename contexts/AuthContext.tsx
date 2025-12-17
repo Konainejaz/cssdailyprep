@@ -2,6 +2,8 @@ import React, { createContext, useContext, useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { Session, User } from '@supabase/supabase-js';
 
+const SESSION_STORAGE_KEY = 'cssprep:auth_session_v1';
+
 type Profile = {
   id: string;
   email: string | null;
@@ -32,32 +34,74 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
+    let isMounted = true;
+
+    const persistSession = (session: Session | null) => {
+      try {
+        if (session?.access_token && session?.refresh_token) {
+          localStorage.setItem(
+            SESSION_STORAGE_KEY,
+            JSON.stringify({
+              access_token: session.access_token,
+              refresh_token: session.refresh_token,
+            })
+          );
+        } else {
+          localStorage.removeItem(SESSION_STORAGE_KEY);
+        }
+      } catch {
+        // ignore
+      }
+    };
+
+    const restoreSession = async () => {
+      try {
+        const raw = localStorage.getItem(SESSION_STORAGE_KEY);
+        if (!raw) return;
+        const parsed = JSON.parse(raw) as { access_token?: string; refresh_token?: string };
+        if (!parsed?.access_token || !parsed?.refresh_token) return;
+        await supabase.auth.setSession({
+          access_token: parsed.access_token,
+          refresh_token: parsed.refresh_token,
+        });
+      } catch {
+        // ignore
+      }
+    };
+
+    const applySession = async (session: Session | null) => {
+      if (!isMounted) return;
       setSession(session);
       setUser(session?.user ?? null);
+      persistSession(session);
       if (session?.user) {
-        fetchProfile(session.user.id);
+        await fetchProfile(session.user.id);
       } else {
+        setProfile(null);
         setIsLoading(false);
       }
-    });
+    };
+
+    const init = async () => {
+      setIsLoading(true);
+      await restoreSession();
+      const { data } = await supabase.auth.getSession();
+      await applySession(data.session ?? null);
+    };
+
+    void init();
 
     // Listen for changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      if (session?.user) {
-        fetchProfile(session.user.id);
-      } else {
-        setProfile(null);
-        setIsLoading(false);
-      }
+      void applySession(session);
     });
 
-    return () => subscription.unsubscribe();
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
   }, []);
 
   const fetchProfile = async (userId: string) => {

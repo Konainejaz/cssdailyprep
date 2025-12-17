@@ -287,7 +287,7 @@ export const researchWithImages = async (query: string, images: string[]): Promi
 
     const completion = await groq.chat.completions.create({
       messages: [{ role: "user", content: userContent }],
-      model: "meta-llama/llama-4-scout-17b-16e-instruct",
+      model: "meta-llama/llama-4-scout-17b-16e-instruct", // Or other vision capable model
       temperature: 0.5,
       max_tokens: 4000,
       response_format: { type: "json_object" }
@@ -440,3 +440,162 @@ export const fetchFlashcards = async (topic: string): Promise<Array<{ front: str
     return [];
   }
 };
+
+export const fetchLectureNotes = async (text: string): Promise<string> => {
+  try {
+    const res = await groqGenerateText(
+      [
+        `Generate comprehensive lecture notes from the following text. Focus on key concepts, definitions, and important details. Structure the notes with headings, bullet points, and summaries.`,
+        `Text:\n${text.substring(0, 15000)}` // Truncate to avoid token limits
+      ].join('\n')
+    );
+    return cleanText(res || '');
+  } catch (error) {
+    console.error("Lecture Notes Generation Error:", error);
+    return "Failed to generate lecture notes.";
+  }
+};
+
+// --- New Functions for Enhanced Functionality ---
+
+export const fetchYouTubeNotes = async (url: string): Promise<string> => {
+  try {
+    // 1. Fetch Metadata via oEmbed
+    // Using noembed.com as a public proxy for oEmbed data
+    const oembedUrl = `https://noembed.com/embed?url=${encodeURIComponent(url)}`;
+    const response = await fetch(oembedUrl);
+    const data = await response.json();
+    
+    if (!data.title) {
+       throw new Error("Could not retrieve video metadata. Please ensure the URL is correct.");
+    }
+    
+    const title = data.title;
+    const author = data.author_name;
+    const provider = data.provider_name; // usually YouTube
+
+    // 2. Generate Notes based on Metadata (Title as a proxy for topic)
+    // Since we can't easily fetch transcripts client-side without a backend, we use the rich metadata
+    // to ask the LLM to generate a study guide for this *topic*.
+    const res = await groqGenerateText(
+      [
+        `You are an expert academic tutor. The user is watching a video titled "${title}" by "${author}" on ${provider}.`,
+        `Please generate a comprehensive study guide / lecture notes based on the likely content of this video.`,
+        `Focus on the core concepts, theories, and details that are typically covered in a lecture with this title.`,
+        `Structure:`,
+        `- Introduction & Overview`,
+        `- Key Concepts & Definitions`,
+        `- Detailed Analysis (Predicted)`,
+        `- Summary & Conclusion`,
+        `Note: Since direct transcript access is limited, infer the content from the title and context to provide the most accurate study notes possible.`
+      ].join('\n')
+    );
+
+    return cleanText(res || '');
+
+  } catch (error) {
+    console.error("YouTube Notes Error:", error);
+    return "Failed to generate notes from YouTube URL. Please try pasting the transcript directly.";
+  }
+};
+
+export const fetchUrlNotes = async (url: string): Promise<string> => {
+  try {
+    // 1. Attempt to fetch content (Will fail if CORS is not enabled on target)
+    // Note: In a production client-side app, you'd need a proxy. 
+    // We'll try to fetch, and if it fails, we fall back to generating based on the URL structure/Topic.
+    
+    let content = "";
+    try {
+        const response = await fetch(url, { method: 'GET', mode: 'cors' }); // Try CORS first
+        if (response.ok) {
+            const html = await response.text();
+            // Naive extraction of body text
+            content = html.replace(/<[^>]*>?/gm, ' ').substring(0, 10000); 
+        }
+    } catch (e) {
+        console.warn("Direct fetch failed (likely CORS), falling back to topic inference.", e);
+    }
+
+    const prompt = content 
+      ? `Generate lecture notes from this website content:\n\n${content}`
+      : `Generate a study guide based on the topic inferred from this URL: "${url}". assume standard academic content for this topic.`;
+
+    const res = await groqGenerateText(prompt);
+    return cleanText(res || '');
+
+  } catch (error) {
+    console.error("URL Notes Error:", error);
+    return "Failed to process URL. Please copy and paste the text content directly.";
+  }
+};
+
+export const generateMindMap = async (topic: string): Promise<string> => {
+  try {
+    const res = await groqGenerateText(
+      [
+        `You are a specialist in the Central Superior Services (CSS) competitive exam of Pakistan.`,
+        `Create a detailed mind map for the topic: "${topic}" relevant to CSS aspirants.`,
+        `Output strictly in Markdown format suitable for Markmap visualization.`,
+        `Rules:`,
+        `1. Start with the root node as a single Heading 1 (# Topic).`,
+        `2. Use Headings (##, ###) for major branches.`,
+        `3. Use bullet points (-) for leaf nodes and details.`,
+        `4. Keep text concise (key phrases, not sentences).`,
+        `5. Do not include any introductory or concluding text. Output ONLY the markdown.`,
+        `6. Ensure deep structure (at least 3 levels deep).`
+      ].join('\n')
+    );
+    
+    let markdown = cleanText(res || '');
+    
+    // Attempt to extract markdown from code blocks if present
+    const codeBlockMatch = markdown.match(/```(?:markdown)?\s*([\s\S]*?)\s*```/i);
+    if (codeBlockMatch && codeBlockMatch[1]) {
+        markdown = codeBlockMatch[1];
+    } else {
+        // If no code blocks, just trim
+        markdown = markdown.trim();
+    }
+    
+    // Ensure it starts with a heading (basic validation)
+    if (!markdown.startsWith('#')) {
+        // Try to find the first heading
+        const firstHeadingIndex = markdown.indexOf('#');
+        if (firstHeadingIndex !== -1) {
+            markdown = markdown.substring(firstHeadingIndex);
+        } else {
+             // Fallback if really bad output
+             markdown = `# ${topic}\n- ${markdown}`;
+        }
+    }
+
+    return markdown;
+  } catch (error) {
+    console.error("Mind Map Generation Error:", error);
+    return "# Error\n- Failed to generate mind map.";
+  }
+};
+
+export const fetchNodeDetails = async (nodeText: string, contextTopic: string): Promise<string> => {
+  try {
+    const res = await groqGenerateText(
+      [
+        `You are a tutor for the CSS (Central Superior Services) exam in Pakistan.`,
+        `The user needs a full, detailed explanation for the concept: "${nodeText}" which appears in a mind map about "${contextTopic}".`,
+        `Provide a comprehensive explanation (approx 300 words) relevant to the CSS exam syllabus.`,
+        `Include:`,
+        `- Clear Definition / Concept`,
+        `- Historical Context or Relevance to Pakistan (if applicable)`,
+        `- Key Facts, Figures, or Articles`,
+        `- Critical Analysis or Implications`,
+        `Output formatted in Markdown (use bolding for keywords, bullet points for lists).`
+      ].join('\n')
+    );
+    return cleanText(res || '');
+  } catch (error) {
+    console.error("Node Details Error:", error);
+    return "Failed to load details.";
+  }
+};
+

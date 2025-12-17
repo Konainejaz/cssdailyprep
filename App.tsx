@@ -35,6 +35,8 @@ import AdminPanel from './components/AdminPanel';
 import HistoryView from './components/HistoryView';
 import AiSummarizer from './components/AiSummarizer';
 import FlashcardGenerator from './components/FlashcardGenerator';
+import AiLectureNotesGenerator from './components/AiLectureNotesGenerator';
+import AiMindMapGenerator from './components/AiMindMapGenerator';
 import { addToHistory, logAction } from './services/historyService';
 import { 
   BookIcon, NoteIcon, PlusIcon, ChevronLeftIcon, SearchIcon, ShareIcon, 
@@ -681,8 +683,44 @@ const InnerApp: React.FC = () => {
             )}
 
             {view === 'FLASHCARDS' && (
-              <motion.div key="FLASHCARDS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+              <motion.div
+                key="FLASHCARDS"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                transition={pageTransition}
+                className="h-full"
+              >
                 <FlashcardGenerator />
+              </motion.div>
+            )}
+
+            {view === 'AI_LECTURE_NOTES' && (
+              <motion.div
+                key="AI_LECTURE_NOTES"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                transition={pageTransition}
+                className="h-full flex-1 overflow-y-auto"
+              >
+                <AiLectureNotesGenerator />
+              </motion.div>
+            )}
+
+            {view === 'AI_MIND_MAP' && (
+              <motion.div
+                key="AI_MIND_MAP"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                transition={pageTransition}
+                className="h-full flex-1 overflow-y-auto"
+              >
+                <AiMindMapGenerator />
               </motion.div>
             )}
 
