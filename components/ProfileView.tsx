@@ -302,7 +302,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
                                                     {initials}
                                                 </div>
                                             )}
-                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px]">
+                                            <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center backdrop-blur-[2px] rounded-full">
                                                 {isUploadingAvatar ? (
                                                     <div className="h-6 w-6 rounded-full border-2 border-white/80 border-t-transparent animate-spin" />
                                                 ) : (
