@@ -330,7 +330,7 @@ const InnerApp: React.FC = () => {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Top Bar */}
-        {!['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT', 'NOTE_EDIT', 'QUIZ', 'ARTICLE_DETAIL'].includes(view) && (
+        {!['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT', 'NOTE_EDIT', 'QUIZ', 'ARTICLE_DETAIL', 'PROFILE'].includes(view) && (
             <TopBar 
                 onNavigate={setView} 
                 onMenuClick={() => setMobileMenuOpen(true)}
@@ -358,7 +358,7 @@ const InnerApp: React.FC = () => {
                 onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY'].includes(view) ? setSearchQuery : undefined}
                 searchPlaceholder={t('searchPlaceholder')}
                 onBack={
-                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY'].includes(view) 
+                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE'].includes(view) 
                    ? () => {
                       if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
                       else if (view === 'GENDER_SYLLABUS') setView('CSS_RESOURCES'); // Usually accessed from CSS Resources or Syllabus? Let's check SyllabusHub. 
@@ -371,6 +371,7 @@ const InnerApp: React.FC = () => {
                       else if (view === 'HISTORY') setView('RESEARCH');
                       else if (['STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT'].includes(view)) setView('STUDY_MATERIAL');
                       else if (view === 'RESOURCE_DETAIL') setView(previousView);
+                      else if (view === 'PROFILE') setView('FEED');
                       else setView('FEED');
                    } 
                    : undefined
@@ -665,8 +666,19 @@ const InnerApp: React.FC = () => {
             )}
 
             {view === 'PROFILE' && (
-              <motion.div key="PROFILE" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
-                <ProfileView onBack={() => setView('FEED')} />
+              <motion.div
+                key="PROFILE"
+                initial="initial"
+                animate="animate"
+                exit="exit"
+                variants={pageVariants}
+                transition={pageTransition}
+                className="h-full flex-1 overflow-hidden"
+              >
+                <ProfileView 
+                  onBack={() => setView('FEED')} 
+                  onMenuClick={() => setMobileMenuOpen(true)}
+                />
               </motion.div>
             )}
 
