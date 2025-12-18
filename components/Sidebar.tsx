@@ -521,7 +521,10 @@ const Sidebar: React.FC<SidebarProps> = ({
               exit={{ opacity: 0, y: 10 }}
             >
                {/* Streak Card */}
-              <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 p-4 group">
+              <div 
+                className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-800 to-gray-900 border border-gray-700/50 p-4 group cursor-pointer hover:border-gray-600/50 transition-colors"
+                onClick={() => handleNav("STREAKS")}
+              >
                  <div className="absolute inset-0 bg-gradient-to-r from-orange-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                  
                  <div className="flex items-center justify-between mb-2">
@@ -549,7 +552,9 @@ const Sidebar: React.FC<SidebarProps> = ({
                className="flex flex-col items-center justify-center py-2"
                title={`Daily Streak: ${streak.count} Days`}
              >
-                <div className="relative group cursor-help">
+                <div className="relative group cursor-pointer"
+                 onClick={() => handleNav("STREAKS")}
+                 title={`Daily Streak: ${streak.count} Days`}>
                   <div className="absolute inset-0 bg-orange-500/20 blur-lg rounded-full opacity-0 group-hover:opacity-100 transition-opacity" />
                   <FireIcon className={`w-6 h-6 relative z-10 ${streak.count > 0 ? "text-orange-500" : "text-gray-600"}`} />
                   <div className="absolute -top-2 -right-2 bg-red-500 text-white text-[9px] font-bold w-4 h-4 flex items-center justify-center rounded-full border border-gray-900 z-20">
