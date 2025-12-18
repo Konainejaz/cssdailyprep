@@ -69,12 +69,18 @@ const Sidebar: React.FC<SidebarProps> = ({
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         className={`
-          w-full flex items-center gap-3 px-3 py-3 rounded-xl text-base relative group overflow-hidden
+          w-full flex items-center gap-3 px-3 py-3 rounded-xl text-base relative group overflow-hidden transform-style-3d
           ${isCollapsed ? "justify-center" : ""}
           ${isActive ? "text-white" : "text-gray-400 hover:text-white"}
         `}
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+        whileHover={{ 
+          scale: 1.05, 
+          rotateX: 10, 
+          rotateY: -5, 
+          z: 50,
+          transition: { type: "spring", stiffness: 400, damping: 10 }
+        }}
+        whileTap={{ scale: 0.95, rotateX: 0, rotateY: 0, z: 0 }}
         title={isCollapsed ? label : undefined}
       >
         {/* Neon Lightning Frame Effect */}
@@ -324,8 +330,8 @@ const Sidebar: React.FC<SidebarProps> = ({
       className={`
         fixed inset-y-0 left-0 bg-[#0F1115] text-gray-300 z-40 flex flex-col border-r border-gray-800/50 h-full shrink-0
         ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full"} 
-        md:translate-x-0 md:static md:inset-auto
-        relative group/sidebar
+        md:translate-x-0 md:relative md:inset-auto
+        group/sidebar
       `}
     >
       {/* Sidebar Border Glow (Right Side) */}
@@ -405,7 +411,7 @@ const Sidebar: React.FC<SidebarProps> = ({
       </div>
 
       {/* Content */}
-      <div className="flex-1 overflow-y-auto p-3 space-y-6 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent">
+      <div className="flex-1 overflow-y-auto p-3 space-y-6 scrollbar-thin scrollbar-thumb-gray-800 scrollbar-track-transparent perspective-1000">
         {/* Main Nav */}
         <div className="space-y-1">
           {!isCollapsed && (

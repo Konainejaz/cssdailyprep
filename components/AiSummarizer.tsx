@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { fetchSummarization } from '../services/groqService';
 import { SparklesIcon, DocumentIcon, CopyIcon } from './Icons';
+import Modal from './Modal';
 
 interface Props {
   onBack?: () => void; // Optional if we want to use it as a standalone page or modal
@@ -11,6 +12,8 @@ const AiSummarizer: React.FC<Props> = ({ onBack }) => {
   const [text, setText] = useState('');
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
+  const [copyModalOpen, setCopyModalOpen] = useState(false);
+  const [copyErrorModalOpen, setCopyErrorModalOpen] = useState(false);
 
   const handleSummarize = async () => {
     if (!text.trim()) return;
@@ -21,8 +24,15 @@ const AiSummarizer: React.FC<Props> = ({ onBack }) => {
   };
 
   const copyToClipboard = () => {
-    navigator.clipboard.writeText(summary);
-    alert('Summary copied to clipboard!');
+    navigator.clipboard
+      .writeText(summary)
+      .then(() => {
+        setCopyModalOpen(true);
+        window.setTimeout(() => setCopyModalOpen(false), 1200);
+      })
+      .catch(() => {
+        setCopyErrorModalOpen(true);
+      });
   };
 
   return (
@@ -94,6 +104,22 @@ const AiSummarizer: React.FC<Props> = ({ onBack }) => {
           </div>
         )}
       </div>
+
+      <Modal
+        open={copyModalOpen}
+        title="Copied"
+        description="Summary copied to clipboard."
+        onClose={() => setCopyModalOpen(false)}
+        primaryAction={{ label: 'OK', onClick: () => setCopyModalOpen(false) }}
+      />
+
+      <Modal
+        open={copyErrorModalOpen}
+        title="Copy failed"
+        description="Your browser blocked clipboard access. Please copy manually."
+        onClose={() => setCopyErrorModalOpen(false)}
+        primaryAction={{ label: 'OK', onClick: () => setCopyErrorModalOpen(false) }}
+      />
     </div>
   );
 };

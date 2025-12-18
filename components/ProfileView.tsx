@@ -3,6 +3,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
 import { LogOutIcon, SaveIcon, ShieldIcon, UserIcon, SettingsIcon, BellIcon, CheckIcon, MenuIcon, ChevronLeftIcon } from './Icons';
+import Modal from './Modal';
 
 interface ProfileViewProps {
   onBack: () => void;
@@ -68,6 +69,8 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
 
   // Security Tab State
   const [resetEmailSent, setResetEmailSent] = useState(false);
+  const [signOutModalOpen, setSignOutModalOpen] = useState(false);
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   // Preferences Tab State (Mock)
   const [notifications, setNotifications] = useState({
@@ -187,10 +190,18 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
   };
 
   const handleSignOut = async () => {
-    const ok = window.confirm('Sign out from this device?');
-    if (!ok) return;
-    await signOut();
-    onBack();
+    setSignOutModalOpen(true);
+  };
+
+  const confirmSignOut = async () => {
+    setIsSigningOut(true);
+    try {
+      await signOut();
+      setSignOutModalOpen(false);
+      onBack();
+    } finally {
+      setIsSigningOut(false);
+    }
   };
 
   const handlePasswordReset = async () => {
@@ -605,6 +616,24 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
           </AnimatePresence>
         </div>
       </div>
+
+      <Modal
+        open={signOutModalOpen}
+        title="Sign out?"
+        description="You will need to sign in again to access your account."
+        onClose={() => setSignOutModalOpen(false)}
+        primaryAction={{
+          label: isSigningOut ? 'Signing out...' : 'Sign out',
+          onClick: confirmSignOut,
+          variant: 'danger',
+          disabled: isSigningOut,
+        }}
+        secondaryAction={{
+          label: 'Cancel',
+          onClick: () => setSignOutModalOpen(false),
+          disabled: isSigningOut,
+        }}
+      />
     </div>
   );
 };

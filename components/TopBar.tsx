@@ -12,6 +12,8 @@ interface TopBarProps {
   onSearchChange?: (query: string) => void;
   searchPlaceholder?: string;
   actionButton?: React.ReactNode;
+  subHeader?: React.ReactNode;
+  subtitle?: string;
 }
 
 const TopBar: React.FC<TopBarProps> = ({ 
@@ -22,10 +24,13 @@ const TopBar: React.FC<TopBarProps> = ({
   searchQuery,
   onSearchChange,
   searchPlaceholder,
-  actionButton
+  actionButton,
+  subHeader,
+  subtitle
 }) => {
   return (
-    <div className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-4 py-2.5 flex items-center justify-between shadow-sm transition-all duration-200">
+    <div className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm transition-all duration-200">
+      <div className="px-4 py-2.5 flex items-center justify-between">
       <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
         <button 
             onClick={onMenuClick}
@@ -45,9 +50,14 @@ const TopBar: React.FC<TopBarProps> = ({
 
         <div className="flex flex-col min-w-0">
            {title && (
-            <h2 className="text-lg md:text-xl font-bold text-gray-900 font-serif tracking-tight truncate">
+            <h2 className="text-lg md:text-xl font-bold text-gray-900 font-serif tracking-tight truncate leading-tight">
                 {title}
             </h2>
+           )}
+           {subtitle && (
+            <p className="text-xs text-gray-500 font-medium truncate hidden md:block">
+              {subtitle}
+            </p>
            )}
         </div>
       </div>
@@ -77,6 +87,12 @@ const TopBar: React.FC<TopBarProps> = ({
           For now, keeping it hidden on mobile to avoid clutter, or we can add a mobile search toggle later. 
           The user asked for "compact", so hiding full search input on mobile header is better. 
           Maybe we can add a search icon that toggles a search bar. */}
+      </div>
+      {subHeader && (
+        <div className="w-full border-t border-gray-100 bg-gray-50/50 backdrop-blur-sm">
+           {subHeader}
+        </div>
+      )}
     </div>
   );
 };

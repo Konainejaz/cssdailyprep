@@ -5,7 +5,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>CSS Daily Prep</title>
-    <link rel="icon" href="data:," />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700;900&family=Dancing+Script:wght@400;500;600;700&display=swap" rel="stylesheet">
     <script>
@@ -34,6 +34,7 @@
             animation: {
               'slide-up': 'slideUp 0.3s ease-out',
               'fade-in': 'fadeIn 0.2s ease-out',
+              'spin-slow': 'spin 4s linear infinite',
             },
             keyframes: {
               slideUp: {
@@ -47,6 +48,29 @@
             }
           },
         },
+        plugins: [
+          function({ addUtilities }) {
+            const newUtilities = {
+              '.perspective-1000': {
+                perspective: '1000px',
+              },
+              '.transform-style-3d': {
+                transformStyle: 'preserve-3d',
+              },
+              '.backface-hidden': {
+                backfaceVisibility: 'hidden',
+              },
+              '.no-scrollbar': {
+                '-ms-overflow-style': 'none',
+                'scrollbar-width': 'none',
+                '&::-webkit-scrollbar': {
+                  display: 'none',
+                },
+              }
+            }
+            addUtilities(newUtilities)
+          }
+        ]
       }
     </script>
     <style>

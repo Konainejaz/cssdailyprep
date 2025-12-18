@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { fetchSearchHistory, SearchHistoryItem, clearHistory } from '../services/historyService';
 import { ChevronLeftIcon, TrashIcon, SearchIcon, BookIcon, GlobeIcon, ClockIcon } from './Icons';
+import Modal from './Modal';
 
 interface HistoryViewProps {
   onBack: () => void;
@@ -13,6 +14,8 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onBack, onSelect, searchQuery
   const [filteredItems, setFilteredItems] = useState<SearchHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [animating, setAnimating] = useState(false);
+  const [clearModalOpen, setClearModalOpen] = useState(false);
+  const [isClearing, setIsClearing] = useState(false);
 
   useEffect(() => {
     loadHistory();
@@ -38,10 +41,18 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onBack, onSelect, searchQuery
   };
 
   const handleClear = async () => {
-    if (confirm("Are you sure you want to clear your entire search history?")) {
+    setClearModalOpen(true);
+  };
+
+  const confirmClear = async () => {
+    setIsClearing(true);
+    try {
       await clearHistory();
       setItems([]);
       setFilteredItems([]);
+      setClearModalOpen(false);
+    } finally {
+      setIsClearing(false);
     }
   };
 
@@ -157,6 +168,24 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onBack, onSelect, searchQuery
           )}
         </div>
       </div>
+
+      <Modal
+        open={clearModalOpen}
+        title="Clear history?"
+        description="This will remove your entire search history from this device."
+        onClose={() => setClearModalOpen(false)}
+        primaryAction={{
+          label: isClearing ? 'Clearing...' : 'Clear',
+          onClick: confirmClear,
+          variant: 'danger',
+          disabled: isClearing,
+        }}
+        secondaryAction={{
+          label: 'Cancel',
+          onClick: () => setClearModalOpen(false),
+          disabled: isClearing,
+        }}
+      />
     </div>
   );
 };

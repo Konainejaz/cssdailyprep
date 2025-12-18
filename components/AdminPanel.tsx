@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { ChevronLeftIcon } from './Icons';
+import Modal from './Modal';
 
 interface AdminPanelProps {
   onBack: () => void;
@@ -11,6 +12,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
   const [loading, setLoading] = useState(true);
   const [logs, setLogs] = useState<any[]>([]);
   const [activeTab, setActiveTab] = useState<'users' | 'logs'>('users');
+  const [roleErrorModalOpen, setRoleErrorModalOpen] = useState(false);
 
   useEffect(() => {
     fetchUsers();
@@ -82,7 +84,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
       fetchUsers();
     } catch (err) {
       console.error('Error updating role:', err);
-      alert('Failed to update role');
+      setRoleErrorModalOpen(true);
     }
   };
 
@@ -203,6 +205,13 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
           </div>
         )}
       </div>
+      <Modal
+        open={roleErrorModalOpen}
+        title="Update failed"
+        description="Failed to update role. Please try again."
+        onClose={() => setRoleErrorModalOpen(false)}
+        primaryAction={{ label: 'OK', onClick: () => setRoleErrorModalOpen(false) }}
+      />
     </div>
   );
 };

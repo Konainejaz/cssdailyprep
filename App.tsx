@@ -279,12 +279,12 @@ const InnerApp: React.FC = () => {
   };
 
   const renderSubjectSelector = () => (
-    <div className="flex overflow-x-auto no-scrollbar gap-2 pb-2 mb-4">
+    <div className="flex overflow-x-auto no-scrollbar gap-2 px-4 py-3 items-center">
       {[Subject.ALL, ...COMPULSORY_SUBJECTS, ...OPTIONAL_SUBJECTS].map((subject) => (
         <button
           key={subject}
           onClick={() => setActiveSubject(subject)}
-          className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-all duration-200 border ${
+          className={`whitespace-nowrap px-4 py-1.5 rounded-full text-xs md:text-sm font-medium transition-all duration-200 border ${
             activeSubject === subject
               ? 'bg-pakGreen-600 text-white border-pakGreen-600 shadow-md shadow-pakGreen-100'
               : 'bg-white text-gray-600 border-gray-200 hover:border-pakGreen-300 hover:bg-gray-50'
@@ -401,6 +401,7 @@ const InnerApp: React.FC = () => {
                      </button>
                   ) : null
                 }
+                subHeader={view === 'FEED' ? renderSubjectSelector() : undefined}
             />
         )}
 
@@ -415,23 +416,18 @@ const InnerApp: React.FC = () => {
                 exit="exit"
                 variants={pageVariants}
                 transition={pageTransition}
-                className="h-full flex flex-col"
+                className="h-full flex flex-col bg-gray-50/50"
               >
-                <div className="px-6 pt-4 md:pt-8 pb-2">
-                   <h1 className="text-2xl md:text-3xl font-bold text-gray-900 font-serif mb-1">{t('dailyIntelligence')}</h1>
-                   <p className="text-gray-500 text-sm md:text-base mb-6">{t('curatedAnalysis')}</p>
-                   {renderSubjectSelector()}
-                </div>
-                <div className="flex-1 overflow-y-auto px-6 pb-24 md:pb-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-7xl">
+                <div className="flex-1 overflow-y-auto px-4 md:px-6 py-6 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
                      {loading ? (
-                        Array.from({ length: 6 }).map((_, i) => (
+                        Array.from({ length: 8 }).map((_, i) => (
                           <ArticleSkeleton key={i} />
                         ))
                      ) : articles.length > 0 ? (
                         <>
-                          {articles.map(article => (
-                            <ArticleCard key={article.id} article={article} onClick={(a) => { setSelectedArticle(a); setView('ARTICLE_DETAIL'); }} />
+                          {articles.map((article, idx) => (
+                            <ArticleCard key={article.id} article={article} onClick={(a) => { setSelectedArticle(a); setView('ARTICLE_DETAIL'); }} index={idx} />
                           ))}
                           <div className="col-span-full flex justify-center py-8">
                              <button 
@@ -757,7 +753,7 @@ const InnerApp: React.FC = () => {
                                   </div>
                                   <h3 className="font-bold text-lg md:text-xl text-gray-800 mb-2 md:mb-3 line-clamp-2 font-serif group-hover:text-pakGreen-700 transition-colors">{note.title}</h3>
                                   <p className="text-sm md:text-base text-gray-500 line-clamp-4 font-serif leading-relaxed flex-1">
-                                     {note.content.replace(/[#*`_]/g, '')}
+                                     {note.content.replace(/<[^>]*>?/gm, '')}
                                   </p>
                                </div>
                             ))
