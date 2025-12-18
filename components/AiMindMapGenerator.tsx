@@ -141,7 +141,7 @@ const MindMapViewer: React.FC<MindMapViewerProps> = ({ markdown, transformer, on
   }, [markdown, transformer]);
 
   return (
-    <div ref={containerRef} className={`relative w-full border border-gray-200 rounded-xl overflow-hidden bg-gray-50 ${className || 'h-[600px]'}`}>
+    <div ref={containerRef} className={`relative w-full border border-gray-200 rounded-lg sm:rounded-xl overflow-hidden bg-gray-50 ${className || 'h-[400px] sm:h-[500px] md:h-[600px]'}`}>
       <svg ref={ref} className="w-full h-full block" style={{ width: '100%', height: '100%' }} />
     </div>
   );
@@ -286,24 +286,24 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
   };
 
   return (
-    <div className="p-3 sm:p-4 md:p-8 bg-gray-50 min-h-full">
+    <div className="p-2 sm:p-3 md:p-4 lg:p-8 bg-gray-50 min-h-screen">
       <motion.div
         initial="visible" 
         animate="visible"
         variants={containerVariants}
-        className="max-w-6xl mx-auto space-y-6 sm:space-y-8"
+        className="max-w-6xl mx-auto space-y-4 sm:space-y-6 md:space-y-8"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center space-y-3 sm:space-y-4">
-          <div className="flex justify-center items-center gap-2 sm:gap-3">
-            <div className="p-1.5 sm:p-2 md:p-3 bg-purple-100 rounded-2xl">
-              <ShareIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-purple-600" />
+        <motion.div variants={itemVariants} className="text-center space-y-2 sm:space-y-3 md:space-y-4 px-2 sm:px-0">
+          <div className="flex justify-center items-center gap-2 sm:gap-3 flex-wrap">
+            <div className="p-1 sm:p-1.5 md:p-2 lg:p-3 bg-purple-100 rounded-xl sm:rounded-2xl flex-shrink-0">
+              <ShareIcon className="w-3 h-3 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-8 lg:h-8 text-purple-600" />
             </div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-lg sm:text-xl md:text-2xl lg:text-4xl font-bold text-gray-900 tracking-tight flex-1 min-w-0">
               Mind Map Generator
             </h1>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base px-3 sm:px-4">
+          <p className="text-gray-600 max-w-2xl mx-auto text-xs sm:text-sm md:text-base px-2 sm:px-3 md:px-4">
             Visualize complex topics instantly. Enter a subject, and let AI structure it for you.
           </p>
         </motion.div>
@@ -311,16 +311,16 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
         {/* Input Section */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-3 sm:p-4 md:p-6 lg:p-8 border border-gray-100"
+          className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl shadow-gray-200/50 p-2 sm:p-3 md:p-4 lg:p-6 lg:p-8 border border-gray-100 mx-2 sm:mx-0"
         >
-          <label htmlFor="topic" className="block text-gray-700 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
+          <label htmlFor="topic" className="block text-gray-700 font-semibold mb-1.5 sm:mb-2 md:mb-3 text-xs sm:text-sm md:text-base">
             What do you want to visualize?
           </label>
-          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:gap-4">
+          <div className="flex flex-col gap-2 sm:gap-3 md:gap-4 lg:flex-row lg:items-center lg:gap-4">
             <input
               id="topic"
               type="text"
-              className="flex-1 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-400 font-medium text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
+              className="flex-1 p-2 sm:p-3 md:p-4 bg-gray-50 border border-gray-200 rounded-lg sm:rounded-xl focus:ring-1 sm:focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-400 font-medium text-xs sm:text-sm md:text-base min-h-[44px] sm:min-h-[48px] md:min-h-[56px]"
               placeholder="e.g. History of Pakistan, Photosynthesis, CSS Exam Syllabus..."
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
@@ -332,22 +332,22 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
               onClick={handleGenerate}
               disabled={loading || !isReady}
               className={`
-                px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 shadow-lg transition-all whitespace-nowrap text-sm sm:text-base min-h-[48px] sm:min-h-[56px] lg:w-auto lg:flex-shrink-0
+                px-3 sm:px-4 md:px-6 lg:px-8 py-2 sm:py-3 md:py-4 rounded-lg sm:rounded-xl font-bold text-white flex items-center justify-center gap-1.5 sm:gap-2 shadow-lg transition-all whitespace-nowrap text-xs sm:text-sm md:text-base min-h-[44px] sm:min-h-[48px] md:min-h-[56px] lg:w-auto lg:flex-shrink-0
                 ${(loading || !isReady) ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'}
               `}
             >
               {loading ? (
                 <>
-                  <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin h-4 w-4 sm:h-5 sm:w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  <span>Generating...</span>
+                  <span className="hidden sm:inline">Generating...</span><span className="sm:hidden">...</span>
                 </>
               ) : (
                 <>
-                  <SparklesIcon className="w-5 h-5" />
-                  <span>Generate Map</span>
+                  <SparklesIcon className="w-3 h-3 sm:w-4 sm:h-4 md:w-5 md:h-5" />
+                  <span className="hidden sm:inline">Generate Map</span><span className="sm:hidden">Generate</span>
                 </>
               )}
             </motion.button>
@@ -357,10 +357,10 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
             <motion.div
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: 'auto' }}
-              className="mt-4 p-4 bg-red-50 text-red-600 rounded-xl border border-red-100 flex items-center gap-3"
+              className="mt-3 sm:mt-4 p-2 sm:p-3 md:p-4 bg-red-50 text-red-600 rounded-lg sm:rounded-xl border border-red-100 flex items-center gap-2 sm:gap-3"
             >
-              <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
-              <p className="text-sm font-medium">{error}</p>
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-red-500 shrink-0" />
+              <p className="text-[10px] sm:text-sm font-medium">{error}</p>
             </motion.div>
           )}
         </motion.div>
@@ -370,38 +370,38 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
           <>
             <div
               ref={resultsDockRef}
-              className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 overflow-hidden border border-gray-100"
+              className="bg-white rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl shadow-gray-200/50 overflow-hidden border border-gray-100 mx-2 sm:mx-0"
             >
-              <div className="p-2 sm:p-3 md:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                <h3 className="font-bold text-gray-700 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base">
-                  <DocumentIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-500" />
+              <div className="p-1.5 sm:p-2 md:p-3 lg:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h3 className="font-bold text-gray-700 flex items-center gap-1 sm:gap-1.5 md:gap-2 text-xs sm:text-sm md:text-base">
+                  <DocumentIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-purple-500" />
                   <span className="truncate">Mind Map</span>
                 </h3>
-                <div className="flex gap-1 sm:gap-2">
+                <div className="flex gap-1 sm:gap-1.5 md:gap-2">
                   <button
                     type="button"
-                    className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-400 min-h-[36px] sm:min-h-[40px]"
+                    className="flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 sm:px-1.5 md:px-2 lg:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs md:text-sm font-bold bg-white border border-gray-200 text-gray-400 min-h-[32px] sm:min-h-[36px] md:min-h-[40px]"
                     title="Full Screen"
                     disabled
                   >
-                    <MaximizeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <MaximizeIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-400 min-h-[36px] sm:min-h-[40px]"
+                    className="flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 sm:px-1.5 md:px-2 lg:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs md:text-sm font-bold bg-white border border-gray-200 text-gray-400 min-h-[32px] sm:min-h-[36px] md:min-h-[40px]"
                     title="Copy Markdown"
                     disabled
                   >
-                    <DocumentIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                    <DocumentIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white p-1.5 sm:p-2 md:p-4">
-                <div className="h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]" />
+              <div className="bg-white p-1 sm:p-1.5 md:p-2 lg:p-4">
+                <div className="h-[250px] sm:h-[300px] md:h-[400px] lg:h-[500px] xl:h-[600px]" />
               </div>
 
-              <div className="p-2 sm:p-3 md:p-4 bg-gray-50 text-xs text-gray-500 text-center border-t border-gray-100">
+              <div className="p-1.5 sm:p-2 md:p-3 lg:p-4 bg-gray-50 text-[9px] sm:text-xs text-gray-500 text-center border-t border-gray-100">
                 <span className="hidden sm:inline">Tip: Click on any node to see detailed explanation. Use toolbar to zoom/pan.</span>
                 <span className="sm:hidden">Tap nodes • Toolbar to zoom</span>
               </div>
@@ -420,45 +420,45 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
                         ? { top: dockRect.top, left: dockRect.left, width: dockRect.width, height: dockRect.height }
                         : { display: 'none' }
                   }
-                  className={`fixed bg-white flex flex-col ${isFullScreen ? 'z-[100]' : 'z-[20] rounded-2xl shadow-xl shadow-gray-200/50 overflow-hidden border border-gray-100'}`}
+                  className={`fixed bg-white flex flex-col ${isFullScreen ? 'z-[100]' : 'z-[20] rounded-xl sm:rounded-2xl shadow-lg sm:shadow-xl shadow-gray-200/50 overflow-hidden border border-gray-100'}`}
                 >
-                  <div className={`p-2 sm:p-3 md:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center ${isFullScreen ? 'shadow-sm z-10' : ''}`}>
-                    <h3 className="font-bold text-gray-700 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base">
-                      <DocumentIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-500" />
+                  <div className={`p-1.5 sm:p-2 md:p-3 lg:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center ${isFullScreen ? 'shadow-sm z-10' : ''}`}>
+                    <h3 className="font-bold text-gray-700 flex items-center gap-1 sm:gap-1.5 md:gap-2 text-xs sm:text-sm md:text-base">
+                      <DocumentIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-5 lg:h-5 text-purple-500" />
                       <span className="truncate">{isFullScreen ? 'Mind Map (Full Screen)' : 'Mind Map'}</span>
                     </h3>
-                    <div className="flex gap-1 sm:gap-2">
+                    <div className="flex gap-1 sm:gap-1.5 md:gap-2">
                       {isFullScreen ? (
                         <button
                           onClick={() => setIsFullScreen(false)}
-                          className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[36px] sm:min-h-[40px]"
+                          className="flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 sm:px-1.5 md:px-2 lg:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs md:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[32px] sm:min-h-[36px] md:min-h-[40px]"
                           title="Exit Full Screen"
                         >
-                          <MinimizeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <MinimizeIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
                           <span className="hidden sm:inline">Exit</span>
                         </button>
                       ) : (
                         <button
                           onClick={() => setIsFullScreen(true)}
-                          className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[36px] sm:min-h-[40px]"
+                          className="flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 sm:px-1.5 md:px-2 lg:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs md:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[32px] sm:min-h-[36px] md:min-h-[40px]"
                           title="Full Screen"
                         >
-                          <MaximizeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <MaximizeIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />
                         </button>
                       )}
 
                       <button
                         onClick={handleCopyMarkdown}
-                        className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[36px] sm:min-h-[40px]"
+                        className="flex items-center gap-1 sm:gap-1.5 md:gap-2 px-1 sm:px-1.5 md:px-2 lg:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs md:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[32px] sm:min-h-[36px] md:min-h-[40px]"
                         title="Copy Markdown"
                       >
-                        {copied ? <CheckIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" /> : <DocumentIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
+                        {copied ? <CheckIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4 text-green-600" /> : <DocumentIcon className="w-2.5 h-2.5 sm:w-3 sm:h-3 md:w-4 md:h-4" />}
                         {copied ? <span className="hidden sm:inline">Copied</span> : <span className="hidden sm:inline">Copy Text</span>}
                       </button>
                     </div>
                   </div>
 
-                  <div className={isFullScreen ? 'flex-1 relative overflow-hidden bg-white' : 'bg-white p-4'}>
+                  <div className={isFullScreen ? 'flex-1 relative overflow-hidden bg-white' : 'bg-white p-2 sm:p-3 md:p-4'}>
                     {transformerRef.current && (
                       <MindMapViewer
                         markdown={markdown}
@@ -470,7 +470,7 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
                   </div>
 
                   {!isFullScreen && (
-                    <div className="p-2 sm:p-3 md:p-4 bg-gray-50 text-xs text-gray-500 text-center border-t border-gray-100">
+                    <div className="p-1.5 sm:p-2 md:p-3 lg:p-4 bg-gray-50 text-[9px] sm:text-xs text-gray-500 text-center border-t border-gray-100">
                       <span className="hidden sm:inline">Tip: Click on any node to see detailed explanation. Use toolbar to zoom/pan.</span>
                       <span className="sm:hidden">Tap nodes • Toolbar to zoom</span>
                     </div>
@@ -489,7 +489,7 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
-                        className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm"
+                        className="fixed inset-0 z-[150] flex items-center justify-center p-2 sm:p-4 bg-black/50 backdrop-blur-sm"
                         onClick={closePopup}
                     >
                         <motion.div
@@ -497,32 +497,32 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
                             animate={{ scale: 1, opacity: 1 }}
                             exit={{ scale: 0.9, opacity: 0 }}
                             onClick={(e) => e.stopPropagation()}
-                            className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[80vh] flex flex-col"
+                            className="bg-white rounded-xl sm:rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden max-h-[85vh] sm:max-h-[80vh] flex flex-col"
                         >
-                            <div className="p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                                <h3 className="font-bold text-lg text-gray-800 line-clamp-1">{selectedNode.text}</h3>
-                                <button onClick={closePopup} className="p-1 hover:bg-gray-200 rounded-full transition-colors">
-                                    <CrossIcon className="w-5 h-5 text-gray-500" />
+                            <div className="p-3 sm:p-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                                <h3 className="font-bold text-sm sm:text-base md:text-lg text-gray-800 line-clamp-1">{selectedNode.text}</h3>
+                                <button onClick={closePopup} className="p-1 sm:p-1.5 hover:bg-gray-200 rounded-full transition-colors">
+                                    <CrossIcon className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                                 </button>
                             </div>
                             
-                            <div className="p-6 overflow-y-auto">
+                            <div className="p-3 sm:p-4 md:p-6 overflow-y-auto">
                                 {selectedNode.loading ? (
-                                    <div className="flex flex-col items-center justify-center py-8 space-y-3">
-                                        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-purple-600"></div>
-                                        <p className="text-sm text-gray-500 animate-pulse">Consulting AI Tutor...</p>
+                                    <div className="flex flex-col items-center justify-center py-6 sm:py-8 space-y-2 sm:space-y-3">
+                                        <div className="animate-spin rounded-full h-6 w-6 sm:h-8 sm:w-8 border-b-2 border-purple-600"></div>
+                                        <p className="text-xs sm:text-sm text-gray-500 animate-pulse">Consulting AI Tutor...</p>
                                     </div>
                                 ) : (
-                                    <div className="prose prose-sm prose-purple max-w-none">
+                                    <div className="prose prose-xs sm:prose-sm prose-purple max-w-none">
                                         <ReactMarkdown>{selectedNode.details || "No details available."}</ReactMarkdown>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="p-4 border-t border-gray-100 bg-gray-50 text-right">
+                            <div className="p-3 sm:p-4 border-t border-gray-100 bg-gray-50 text-right">
                                  <button 
                                     onClick={closePopup}
-                                    className="px-4 py-2 bg-gray-900 text-white text-sm font-bold rounded-lg hover:bg-gray-800 transition-colors"
+                                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gray-900 text-white text-xs sm:text-sm font-bold rounded-lg hover:bg-gray-800 transition-colors"
                                  >
                                     Close
                                  </button>

@@ -231,25 +231,25 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
           
           {/* Hero Section (Visible when no result) */}
           {!result && !isResearching && (
-            <div className="text-center mb-10 w-full animate-fade-in-up">
-              <h2 className="text-3xl md:text-5xl font-serif font-bold text-gray-900 mb-4 tracking-tight">
+            <div className="text-center mb-6 md:mb-10 w-full animate-fade-in-up">
+              <h2 className="text-2xl sm:text-3xl md:text-5xl font-serif font-bold text-gray-900 mb-3 md:mb-4 tracking-tight">
                 Explore Knowledge
               </h2>
-              <p className="text-lg text-gray-500 max-w-2xl mx-auto mb-8 font-light">
+              <p className="text-sm sm:text-base md:text-lg text-gray-500 max-w-2xl mx-auto mb-6 md:mb-8 font-light px-2">
                 Deep dive into CSS topics with AI-powered analysis, mind maps, and comprehensive study notes.
               </p>
             </div>
           )}
 
           {/* Search Bar Container */}
-          <div className={`w-full transition-all duration-500 ease-in-out ${result ? 'mb-8' : 'mb-12 max-w-3xl'}`}>
-             <div className="bg-white rounded-2xl shadow-xl shadow-pakGreen-900/5 border border-gray-100 p-3 md:p-4 flex flex-col gap-2 relative group focus-within:ring-4 focus-within:ring-pakGreen-100 transition-all">
-                <div className="flex items-start gap-3 p-1">
-                   <div className="pt-3 pl-1 text-gray-400">
-                     <SearchIcon className="w-6 h-6" />
+          <div className={`w-full transition-all duration-500 ease-in-out ${result ? 'mb-6 md:mb-8' : 'mb-8 md:mb-12 max-w-3xl'}`}>
+             <div className="bg-white rounded-2xl shadow-xl shadow-pakGreen-900/5 border border-gray-100 p-2 sm:p-3 md:p-4 flex flex-col gap-2 relative group focus-within:ring-4 focus-within:ring-pakGreen-100 transition-all">
+                <div className="flex items-start gap-2 sm:gap-3 p-1">
+                   <div className="pt-2.5 sm:pt-3 pl-1 text-gray-400">
+                     <SearchIcon className="w-5 h-5 sm:w-6 sm:h-6" />
                    </div>
                    <textarea 
-                     className="flex-1 bg-transparent border-none text-lg md:text-xl placeholder-gray-400 focus:ring-0 resize-none min-h-[60px] py-2 px-2 focus:outline-none overflow-hidden"
+                     className="flex-1 bg-transparent border-none text-base sm:text-lg md:text-xl placeholder-gray-400 focus:ring-0 resize-none min-h-[50px] sm:min-h-[60px] py-2 px-2 focus:outline-none overflow-hidden"
                      placeholder="Ask anything... (e.g., '18th Amendment')"
                      value={query}
                      onChange={e => {
@@ -289,16 +289,16 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
                 <div className="flex justify-between items-center px-2 pt-2 border-t border-gray-50">
                    <button 
                      onClick={() => fileInputRef.current?.click()}
-                     className="p-2 text-gray-400 hover:text-pakGreen-600 hover:bg-pakGreen-50 rounded-lg transition-colors flex items-center gap-2 text-sm font-medium"
+                     className="p-1.5 sm:p-2 text-gray-400 hover:text-pakGreen-600 hover:bg-pakGreen-50 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium"
                    >
-                     <ImageIcon className="w-5 h-5" />
+                     <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                      <span className="hidden sm:inline">Add Image</span>
                    </button>
                    
                    <button 
                      onClick={() => handleResearch()}
                      disabled={isResearching || (!query && images.length === 0)}
-                     className="bg-pakGreen-600 text-white px-6 py-2.5 rounded-xl text-sm font-bold hover:bg-pakGreen-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-pakGreen-600/20 transition-all active:scale-95 flex items-center gap-2"
+                     className="bg-pakGreen-600 text-white px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl text-xs sm:text-sm font-bold hover:bg-pakGreen-700 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-pakGreen-600/20 transition-all active:scale-95 flex items-center gap-1 sm:gap-2"
                    >
                      {isResearching ? (
                        <>
@@ -316,12 +316,12 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
              
              {/* Quick Prompts (Only visible in Hero state) */}
              {!result && !isResearching && (
-                <div className="mt-8 flex flex-wrap justify-center gap-3 animate-fade-in-up delay-100">
+                <div className="mt-6 sm:mt-8 flex flex-wrap justify-center gap-2 sm:gap-3 animate-fade-in-up delay-100">
                    {QuickPrompts.map((prompt, i) => (
                       <button 
                         key={i}
                         onClick={() => { setQuery(prompt); handleResearch(prompt); }}
-                        className="bg-white border border-gray-200 px-4 py-2 rounded-full text-sm text-gray-600 hover:border-pakGreen-500 hover:text-pakGreen-700 hover:shadow-md transition-all active:scale-95"
+                        className="bg-white border border-gray-200 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm text-gray-600 hover:border-pakGreen-500 hover:text-pakGreen-700 hover:shadow-md transition-all active:scale-95"
                       >
                         {prompt}
                       </button>
@@ -343,20 +343,20 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
           {result && (
             <div className="w-full animate-fade-in-up">
                {/* Tab Navigation */}
-               <div className="flex justify-center mb-8">
-                  <div className="bg-white p-1.5 rounded-2xl border border-gray-100 shadow-sm inline-flex">
+               <div className="flex justify-center mb-6 md:mb-8">
+                  <div className="bg-white p-1 sm:p-1.5 rounded-xl md:rounded-2xl border border-gray-100 shadow-sm inline-flex">
                      <button 
                        onClick={() => setViewMode('ANALYSIS')}
-                       className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${viewMode === 'ANALYSIS' ? 'bg-pakGreen-50 text-pakGreen-700 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                       className={`px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 rounded-lg md:rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-1 sm:gap-2 ${viewMode === 'ANALYSIS' ? 'bg-pakGreen-50 text-pakGreen-700 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                      >
-                       <BookIcon className="w-4 h-4" /> Analysis
+                       <BookIcon className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Analysis</span><span className="xs:hidden">A</span>
                      </button>
                      {result.mindMap && (
                        <button 
                          onClick={() => setViewMode('MINDMAP')}
-                         className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 flex items-center gap-2 ${viewMode === 'MINDMAP' ? 'bg-pakGreen-50 text-pakGreen-700 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
+                         className={`px-3 sm:px-4 md:px-6 py-2 sm:py-2.5 rounded-lg md:rounded-xl text-xs sm:text-sm font-bold transition-all duration-200 flex items-center gap-1 sm:gap-2 ${viewMode === 'MINDMAP' ? 'bg-pakGreen-50 text-pakGreen-700 shadow-sm' : 'text-gray-500 hover:text-gray-900'}`}
                        >
-                         <GlobeIcon className="w-4 h-4" /> Mind Map
+                         <GlobeIcon className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Mind Map</span><span className="xs:hidden">Map</span>
                        </button>
                      )}
                   </div>
@@ -366,27 +366,27 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
                <div className="bg-white rounded-3xl shadow-xl shadow-gray-200/50 border border-gray-100 overflow-hidden min-h-[60vh]">
                   
                   {/* Action Bar */}
-                  <div className="px-6 py-4 border-b border-gray-50 flex justify-between items-center bg-gray-50/50">
+                  <div className="px-3 sm:px-4 md:px-6 py-3 sm:py-4 border-b border-gray-50 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 sm:gap-0 bg-gray-50/50">
                      <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Generated Result</span>
                      <button 
                        onClick={() => onSaveNote(result.query, result.content)}
-                       className="text-pakGreen-600 hover:bg-pakGreen-50 px-4 py-2 rounded-lg transition-colors text-sm font-bold flex items-center gap-2"
+                       className="text-pakGreen-600 hover:bg-pakGreen-50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm font-bold flex items-center gap-1 sm:gap-2"
                      >
-                        <PlusIcon className="w-4 h-4" /> Save to Notes
+                        <PlusIcon className="w-3 h-3 sm:w-4 sm:h-4" /> <span className="hidden xs:inline">Save to Notes</span><span className="xs:hidden">Save</span>
                      </button>
                   </div>
 
                   {viewMode === 'ANALYSIS' ? (
-                    <div className="p-4 md:p-12">
-                       <article className="prose prose-lg prose-pakGreen max-w-none font-serif text-gray-700 leading-relaxed">
-                          <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-8 pb-6 border-b border-gray-100">{result.query}</h1>
+                    <div className="p-3 sm:p-4 md:p-12">
+                       <article className="prose prose-sm sm:prose-base md:prose-lg prose-pakGreen max-w-none font-serif text-gray-700 leading-relaxed">
+                          <h1 className="text-lg sm:text-xl md:text-2xl lg:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 md:mb-8 pb-4 sm:pb-6 border-b border-gray-100">{result.query}</h1>
                           <ReactMarkdown 
                              components={{
-                               h1: ({node, ...props}) => <h2 className="text-xl md:text-2xl font-bold mt-8 mb-4 text-gray-900" {...props} />,
-                               h2: ({node, ...props}) => <h3 className="text-lg md:text-xl font-bold mt-6 mb-3 text-gray-800" {...props} />,
-                               p: ({node, ...props}) => <p className="mb-4 text-gray-600 leading-7 text-base md:text-lg" {...props} />,
-                               ul: ({node, ...props}) => <ul className="list-disc pl-6 mb-4 space-y-2" {...props} />,
-                               li: ({node, ...props}) => <li className="text-gray-600 text-base md:text-lg" {...props} />,
+                               h1: ({node, ...props}) => <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl font-bold mt-6 sm:mt-8 mb-3 sm:mb-4 text-gray-900" {...props} />,
+                               h2: ({node, ...props}) => <h3 className="text-sm sm:text-base md:text-lg lg:text-xl font-bold mt-4 sm:mt-6 mb-2 sm:mb-3 text-gray-800" {...props} />,
+                               p: ({node, ...props}) => <p className="mb-3 sm:mb-4 text-gray-600 leading-6 sm:leading-7 text-sm sm:text-base md:text-lg" {...props} />,
+                               ul: ({node, ...props}) => <ul className="list-disc pl-4 sm:pl-6 mb-3 sm:mb-4 space-y-1 sm:space-y-2" {...props} />,
+                               li: ({node, ...props}) => <li className="text-gray-600 text-sm sm:text-base md:text-lg" {...props} />,
                                strong: ({node, ...props}) => <strong className="font-bold text-gray-900" {...props} />,
                              }}
                           >
@@ -394,22 +394,22 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
                           </ReactMarkdown>
                           
                           {result.sources.length > 0 && (
-                            <div className="mt-16 pt-8 border-t border-gray-100 bg-gray-50/50 -mx-6 md:-mx-12 px-6 md:px-12 pb-8">
-                              <h3 className="text-lg font-bold text-gray-900 mb-4 flex items-center gap-2">
-                                <span className="w-1 h-6 bg-pakGreen-500 rounded-full"></span>
+                            <div className="mt-8 sm:mt-12 md:mt-16 pt-6 sm:pt-8 border-t border-gray-100 bg-gray-50/50 -mx-3 sm:-mx-4 md:-mx-12 px-3 sm:px-4 md:px-12 pb-6 sm:pb-8">
+                              <h3 className="text-base sm:text-lg font-bold text-gray-900 mb-3 sm:mb-4 flex items-center gap-2">
+                                <span className="w-1 h-5 sm:h-6 bg-pakGreen-500 rounded-full"></span>
                                 References & Sources
                               </h3>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                              <div className="grid grid-cols-1 gap-3 sm:gap-4">
                                 {result.sources.map((source, i) => (
                                   <a 
                                     key={i} 
                                     href={source.url} 
                                     target="_blank" 
                                     rel="noopener noreferrer" 
-                                    className="flex items-start gap-3 p-4 bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pakGreen-200 transition-all group"
+                                    className="flex items-start gap-2 sm:gap-3 p-3 sm:p-4 bg-white rounded-lg sm:rounded-xl border border-gray-100 shadow-sm hover:shadow-md hover:border-pakGreen-200 transition-all group"
                                   >
-                                    <span className="w-6 h-6 bg-pakGreen-50 rounded-full flex items-center justify-center text-xs font-bold text-pakGreen-600 shrink-0 group-hover:bg-pakGreen-600 group-hover:text-white transition-colors">{i + 1}</span>
-                                    <span className="text-sm text-gray-700 font-medium line-clamp-2 group-hover:text-pakGreen-700">{source.title}</span>
+                                    <span className="w-5 h-5 sm:w-6 sm:h-6 bg-pakGreen-50 rounded-full flex items-center justify-center text-xs font-bold text-pakGreen-600 shrink-0 group-hover:bg-pakGreen-600 group-hover:text-white transition-colors">{i + 1}</span>
+                                    <span className="text-xs sm:text-sm text-gray-700 font-medium line-clamp-2 group-hover:text-pakGreen-700">{source.title}</span>
                                   </a>
                                 ))}
                               </div>
@@ -418,15 +418,15 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
                        </article>
                     </div>
                   ) : (
-                    <div className="p-8 md:p-12 bg-gray-50/30 min-h-[60vh]">
+                    <div className="p-4 sm:p-6 md:p-8 lg:p-12 bg-gray-50/30 min-h-[60vh]">
                        {result.mindMap ? (
                          <div className="max-w-4xl mx-auto">
                            <MindMapTree node={result.mindMap} />
                          </div>
                        ) : (
                          <div className="flex flex-col items-center justify-center h-64 text-gray-400">
-                            <GlobeIcon className="w-12 h-12 mb-4 opacity-50" />
-                            <p>No Mind Map data available for this topic.</p>
+                            <GlobeIcon className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 mb-4 opacity-50" />
+                            <p className="text-sm sm:text-base">No Mind Map data available for this topic.</p>
                          </div>
                        )}
                     </div>

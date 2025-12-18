@@ -406,6 +406,9 @@ const InnerApp: React.FC = () => {
                     view === 'STUDY_ESSAYS' ? 'Important Essays' :
                     view === 'STUDY_ISLAMIAT' ? 'Islamiat' :
                     view === 'AI_MIND_MAP' ? 'Mind Map Generator' :
+                    view === 'AI_LECTURE_NOTES' ? 'AI Lecture Notes' :
+                    view === 'FLASHCARDS' ? 'AI Flashcards' :
+                    view === 'AI_SUMMARIZER' ? 'AI Summarizer' :
                     view === 'RESOURCE_DETAIL' && resourceDetail ? resourceDetail.title :
                     ''
                 }
@@ -413,7 +416,7 @@ const InnerApp: React.FC = () => {
                 onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
                 searchPlaceholder={t('searchPlaceholder')}
                 onBack={
-                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP'].includes(view) 
+                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP', 'AI_LECTURE_NOTES', 'FLASHCARDS', 'AI_SUMMARIZER', 'NOTE_LIST', 'RESEARCH', 'CSS_RESOURCES', 'STUDY_MATERIAL'].includes(view) 
                    ? () => {
                       if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
                       else if (view === 'GENDER_SYLLABUS') setView('CSS_RESOURCES'); // Usually accessed from CSS Resources or Syllabus? Let's check SyllabusHub. 
@@ -427,6 +430,13 @@ const InnerApp: React.FC = () => {
                       else if (view === 'STREAKS') setView('FEED');
                       else if (view === 'NEWS_EVENTS') setView('FEED');
                       else if (view === 'AI_MIND_MAP') setView('RESEARCH');
+                      else if (view === 'AI_LECTURE_NOTES') setView('RESEARCH');
+                      else if (view === 'FLASHCARDS') setView('RESEARCH');
+                      else if (view === 'AI_SUMMARIZER') setView('RESEARCH');
+                      else if (view === 'NOTE_LIST') setView('FEED');
+                      else if (view === 'RESEARCH') setView('FEED');
+                      else if (view === 'CSS_RESOURCES') setView('FEED');
+                      else if (view === 'STUDY_MATERIAL') setView('FEED');
                       else if (['STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT'].includes(view)) setView('STUDY_MATERIAL');
                       else if (view === 'RESOURCE_DETAIL') setView(previousView);
                       else if (view === 'PROFILE') setView('FEED');
