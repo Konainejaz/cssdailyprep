@@ -131,6 +131,12 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
 
     try {
       const file = e.target.files[0];
+      
+      // Client-side validation
+       if (file.size > 500 * 1024) { // 500KB limit
+         throw new Error('Image size must be less than 500KB');
+       }
+
       const fileExt = file.name.split('.').pop();
       const fileName = `${profile?.id}.${fileExt}`;
       const filePath = `${fileName}`;
@@ -160,7 +166,12 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
       setMessage({ type: 'success', text: 'Avatar updated successfully' });
     } catch (error: any) {
        console.error(error);
-       setMessage({ type: 'error', text: 'Error uploading avatar. Make sure "avatars" bucket exists and is public.' });
+       // Show the specific error message from Supabase (e.g. "The object exceeded the maximum allowed size")
+       // or fallback to a generic message.
+       setMessage({ 
+         type: 'error', 
+         text: error.message || 'Error uploading avatar. Please try again.' 
+       });
     } finally {
       setIsUploadingAvatar(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
