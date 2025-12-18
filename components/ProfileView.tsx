@@ -217,7 +217,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
         </div>
 
       {/* Custom TopBar with Integrated Navigation */}
-      <div className="sticky top-0 z-40 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm transition-all duration-200">
+      <div className="sticky top-0 z-39 bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm transition-all duration-200">
         <div className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between py-3">
              <div className="flex items-center gap-3">
