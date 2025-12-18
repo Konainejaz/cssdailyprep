@@ -154,6 +154,12 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
     visible: { opacity: 1, y: 0 },
   };
 
+  const tabVariants = {
+    hidden: { opacity: 0, y: 12 },
+    visible: { opacity: 1, y: 0, transition: { duration: 0.2 } },
+    exit: { opacity: 0, y: 8, transition: { duration: 0.2 } }
+  };
+
   return (
     <motion.div
       initial="hidden"
@@ -212,10 +218,10 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
           {activeTab === 'overview' && (
             <motion.div
               key="overview"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.2 }}
+              variants={tabVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               className="space-y-6"
             >
               <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -340,10 +346,10 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
           {activeTab === 'activity' && (
             <motion.div
               key="activity"
-              initial={{ opacity: 0, y: 12 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 8 }}
-              transition={{ duration: 0.2 }}
+              variants={tabVariants}
+              initial="hidden"
+              animate="visible"
+              exit="exit"
               className="rounded-3xl border border-gray-200 bg-white overflow-hidden"
             >
               <div className="p-5 border-b border-gray-100 flex items-center justify-between">

@@ -881,9 +881,13 @@ const InnerApp: React.FC = () => {
                  <span className="text-[11px] sm:text-xs font-medium">Lab</span>
                </button>
                <button onClick={() => setView('NOTE_LIST')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'NOTE_LIST' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
-                 <NoteIcon className="w-6 h-6 mb-1" />
-                 <span className="text-[11px] sm:text-xs font-medium">Notes</span>
-               </button>
+                <NoteIcon className="w-6 h-6 mb-1" />
+                <span className="text-[11px] sm:text-xs font-medium">Notes</span>
+              </button>
+              <button onClick={() => setMobileMenuOpen(true)} className="flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 text-gray-400 hover:bg-gray-50">
+                <MenuIcon className="w-6 h-6 mb-1" />
+                <span className="text-[11px] sm:text-xs font-medium">Menu</span>
+              </button>
           </nav>
         )}
       </div>
