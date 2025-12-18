@@ -171,32 +171,101 @@ export const migrateNotes = async () => {
 // (though it is "Personalized").
 // But since I'm here, I'll leave streak as is.
 
-export const updateStreak = (): StreakData => {
+const getStreakLocal = (): StreakData => {
   let streak: StreakData = { count: 0, lastVisitDate: '' };
   try {
     const stored = localStorage.getItem(STREAK_KEY);
     if (stored) streak = JSON.parse(stored);
   } catch {}
+  return streak;
+};
 
-  const today = new Date().toISOString().split('T')[0];
-  
-  if (streak.lastVisitDate === today) {
-    return streak;
-  }
+const saveStreakLocal = (streak: StreakData) => {
+  localStorage.setItem(STREAK_KEY, JSON.stringify(streak));
+};
+
+const normalizeDate = (date: Date) => date.toISOString().split('T')[0];
+
+const computeNextStreak = (current: StreakData): StreakData => {
+  const today = normalizeDate(new Date());
+  if (current.lastVisitDate === today) return current;
 
   const yesterday = new Date();
   yesterday.setDate(yesterday.getDate() - 1);
-  const yesterdayStr = yesterday.toISOString().split('T')[0];
+  const yesterdayStr = normalizeDate(yesterday);
 
-  if (streak.lastVisitDate === yesterdayStr) {
-    streak.count += 1;
-  } else {
-    streak.count = 1;
+  const nextCount = current.lastVisitDate === yesterdayStr ? current.count + 1 : 1;
+  return { count: nextCount, lastVisitDate: today };
+};
+
+export const updateStreak = async (): Promise<StreakData> => {
+  const local = getStreakLocal();
+
+  try {
+    const session = await getSession();
+    if (!session?.user?.id) {
+      const nextLocal = computeNextStreak(local);
+      saveStreakLocal(nextLocal);
+      return nextLocal;
+    }
+
+    const { data: settings, error } = await supabase
+      .from('user_settings')
+      .select('preferences')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+
+    if (error) throw error;
+
+    const prefs = (settings?.preferences ?? {}) as any;
+    const dbStreak: StreakData | null =
+      prefs?.streak && typeof prefs.streak === 'object'
+        ? { count: Number(prefs.streak.count ?? 0), lastVisitDate: String(prefs.streak.lastVisitDate ?? '') }
+        : null;
+
+    const base =
+      dbStreak && dbStreak.lastVisitDate && dbStreak.lastVisitDate >= local.lastVisitDate
+        ? dbStreak
+        : local;
+
+    const next = computeNextStreak(base);
+    saveStreakLocal(next);
+
+    const nextPrefs = { ...prefs, streak: next };
+    await supabase.from('user_settings').upsert(
+      {
+        user_id: session.user.id,
+        preferences: nextPrefs,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: 'user_id' }
+    );
+
+    return next;
+  } catch {
+    const nextLocal = computeNextStreak(local);
+    saveStreakLocal(nextLocal);
+    return nextLocal;
   }
-  
-  streak.lastVisitDate = today;
-  localStorage.setItem(STREAK_KEY, JSON.stringify(streak));
-  return streak;
+};
+
+export const fetchRecentLogs = async (days: number = 14) => {
+  const session = await getSession();
+  if (!session?.user?.id) return [];
+
+  const since = new Date();
+  since.setDate(since.getDate() - Math.max(1, days));
+
+  const { data, error } = await supabase
+    .from('user_logs')
+    .select('*')
+    .eq('user_id', session.user.id)
+    .gte('created_at', since.toISOString())
+    .order('created_at', { ascending: false })
+    .limit(1000);
+
+  if (error || !data) return [];
+  return data;
 };
 
 // --- Question Bank (Keep Local) ---

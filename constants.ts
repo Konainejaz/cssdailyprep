@@ -48,3 +48,54 @@ export const CSS_RESOURCES = [
   { id: 'cr-3', title: 'Interview Tips', prompt: 'Provide expert tips for the CSS Viva Voce/Psychological assessment.', category: 'Guidance' },
   { id: 'cr-4', title: 'Subject Selection Guide', prompt: 'Guide on how to select optional subjects for CSS based on scoring trends.', category: 'Guidance' },
 ];
+
+export const NEWS_EVENTS = [
+  {
+    id: 'ne-1',
+    title: 'FPSC CSS Official Announcements',
+    date: 'Official',
+    type: 'Portal',
+    url: 'https://www.fpsc.gov.pk/',
+    source: 'FPSC',
+  },
+  {
+    id: 'ne-2',
+    title: 'CSS Rules, Syllabus, and Downloads',
+    date: 'Official',
+    type: 'Resources',
+    url: 'https://www.fpsc.gov.pk/examination/css',
+    source: 'FPSC',
+  },
+  {
+    id: 'ne-3',
+    title: 'Federal Government Gazette & Notifications',
+    date: 'Updates',
+    type: 'Govt',
+    url: 'https://www.gazette.gov.pk/',
+    source: 'Govt of Pakistan',
+  },
+  {
+    id: 'ne-4',
+    title: 'PBS Key Indicators',
+    date: 'Data',
+    type: 'Stats',
+    url: 'https://www.pbs.gov.pk/',
+    source: 'Pakistan Bureau of Statistics',
+  },
+  {
+    id: 'ne-5',
+    title: 'State Bank of Pakistan: Press Releases',
+    date: 'Updates',
+    type: 'Economy',
+    url: 'https://www.sbp.org.pk/press_rel/index.asp',
+    source: 'SBP',
+  },
+  {
+    id: 'ne-6',
+    title: 'Pakistan Economic Survey (Latest)',
+    date: 'Report',
+    type: 'Economy',
+    url: 'https://www.finance.gov.pk/survey/',
+    source: 'Ministry of Finance',
+  },
+] as const;

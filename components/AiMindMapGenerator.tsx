@@ -13,6 +13,7 @@ import ReactMarkdown from 'react-markdown';
 import * as d3 from 'd3';
 import { createPortal } from 'react-dom';
 import 'markmap-toolbar/dist/style.css';
+import { addToHistory, logAction } from '../services/historyService';
 
 interface MindMapViewerProps {
   markdown: string;
@@ -146,7 +147,12 @@ const MindMapViewer: React.FC<MindMapViewerProps> = ({ markdown, transformer, on
   );
 };
 
-const AiMindMapGenerator: React.FC = () => {
+interface Props {
+  initialTopic?: string;
+  initialMarkdown?: string;
+}
+
+const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) => {
   const [topic, setTopic] = useState('');
   const [markdown, setMarkdown] = useState('');
   const [loading, setLoading] = useState(false);
@@ -162,6 +168,11 @@ const AiMindMapGenerator: React.FC = () => {
   // Lazy init transformer
   const transformerRef = useRef<Transformer | null>(null);
   const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    if (typeof initialTopic === 'string') setTopic(initialTopic);
+    if (typeof initialMarkdown === 'string') setMarkdown(initialMarkdown);
+  }, [initialTopic, initialMarkdown]);
 
   useEffect(() => {
     try {
@@ -221,8 +232,11 @@ const AiMindMapGenerator: React.FC = () => {
     setSelectedNode(null);
 
     try {
+      logAction('mind_map_started', 'ai_mind_map', undefined, { topic });
       const result = await generateMindMap(topic);
       setMarkdown(result);
+      addToHistory(topic.trim().slice(0, 120), 'ai_mind_map', { topic: topic.trim(), markdown: result });
+      logAction('mind_map_completed', 'ai_mind_map', undefined, { topic, length: result?.length ?? 0 });
     } catch (err) {
       setError('Failed to generate mind map. Please try again.');
       console.error(err);
@@ -236,6 +250,7 @@ const AiMindMapGenerator: React.FC = () => {
       setSelectedNode({ text, details: null, loading: true });
       
       try {
+          logAction('mind_map_node_opened', 'ai_mind_map', undefined, { topic, node: text });
           const details = await fetchNodeDetails(text, topic);
           setSelectedNode(prev => prev && prev.text === text ? { ...prev, details, loading: false } : prev);
       } catch (e) {

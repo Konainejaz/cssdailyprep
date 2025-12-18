@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown'; 
 import { Subject, Article, Note, ViewState, ResearchResult } from './types';
@@ -33,6 +33,8 @@ import ForgotPassword from './components/auth/ForgotPassword';
 import ProfileView from './components/ProfileView';
 import AdminPanel from './components/AdminPanel';
 import HistoryView from './components/HistoryView';
+import StreaksView from './components/StreaksView';
+import NewsEventsView from './components/NewsEventsView';
 import AiSummarizer from './components/AiSummarizer';
 import FlashcardGenerator from './components/FlashcardGenerator';
 import AiLectureNotesGenerator from './components/AiLectureNotesGenerator';
@@ -85,6 +87,7 @@ const InnerApp: React.FC = () => {
   const [noteToEdit, setNoteToEdit] = useState<Partial<Note> | null>(null);
   const [resourceDetail, setResourceDetail] = useState<{title: string, content: string} | null>(null);
   const [previousView, setPreviousView] = useState<ViewState>('FEED');
+  const [historyPrefill, setHistoryPrefill] = useState<{ type: string; query: string; snapshot?: any } | null>(null);
 
   // Sidebar State
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -92,6 +95,7 @@ const InnerApp: React.FC = () => {
   const [showSplash, setShowSplash] = useState(false);
 
   const STORAGE_KEY = 'cssprep:app_state';
+  const viewSessionRef = useRef<{ view: ViewState; startedAt: number } | null>(null);
 
   // --- Effects ---
   useEffect(() => {
@@ -114,8 +118,10 @@ const InnerApp: React.FC = () => {
     loadNotes();
 
     // Update Streak
-    const currentStreak = updateStreak();
-    setStreak(currentStreak);
+    (async () => {
+      const currentStreak = await updateStreak();
+      setStreak(currentStreak);
+    })();
   }, [session]); // Add session dependency to reload notes on auth change
 
   useEffect(() => {
@@ -151,6 +157,20 @@ const InnerApp: React.FC = () => {
       }
     }
   }, [session, authLoading, view]);
+
+  useEffect(() => {
+    const now = Date.now();
+    const prev = viewSessionRef.current;
+
+    if (prev && prev.view !== view) {
+      const durationMs = now - prev.startedAt;
+      if (durationMs > 1500) {
+        logAction('view_session', 'view', prev.view, { view: prev.view, durationMs });
+      }
+    }
+
+    viewSessionRef.current = { view, startedAt: now };
+  }, [view]);
 
   useEffect(() => {
     let isMounted = true;
@@ -202,15 +222,44 @@ const InnerApp: React.FC = () => {
   };
 
   const handleHistorySelect = (item: any) => {
+    setHistoryPrefill({ type: item.type, query: item.query, snapshot: item.result_snapshot });
+
     if (item.type === 'research') {
-       setView('RESEARCH');
-       setResearchQueryInput(item.query);
-       setResearchResult(item.result_snapshot);
-    } else {
-       // Fallback
-       setView('RESEARCH');
-       setResearchQueryInput(item.query);
+      setView('RESEARCH');
+      setResearchQueryInput(item.query);
+      setResearchResult(item.result_snapshot);
+      return;
     }
+
+    if (item.type === 'resource') {
+      setPreviousView('HISTORY');
+      setView('RESOURCE_DETAIL');
+      setResourceDetail({ title: item.query, content: String(item.result_snapshot?.content ?? '') });
+      return;
+    }
+
+    if (item.type === 'ai_summarizer') {
+      setView('AI_SUMMARIZER');
+      return;
+    }
+
+    if (item.type === 'flashcards') {
+      setView('FLASHCARDS');
+      return;
+    }
+
+    if (item.type === 'ai_lecture_notes') {
+      setView('AI_LECTURE_NOTES');
+      return;
+    }
+
+    if (item.type === 'ai_mind_map') {
+      setView('AI_MIND_MAP');
+      return;
+    }
+
+    setView('RESEARCH');
+    setResearchQueryInput(item.query);
   };
 
   const handleStudySelect = async (item: any) => {
@@ -233,6 +282,7 @@ const InnerApp: React.FC = () => {
     setPreviousView(view);
     setView(nextView);
     setActiveStudyId(id);
+    logAction('study_opened', 'study_material', String(id), { id, category, type, title: item?.title ?? undefined });
 
     // Check Cache
     if (studyCache[id]) {
@@ -265,6 +315,8 @@ const InnerApp: React.FC = () => {
     const result = await researchTopic(contextualPrompt);
     if (result) {
       setResourceDetail({ title, content: result.content });
+      addToHistory(title, 'resource', { content: result.content, sources: result.sources ?? [] });
+      logAction('resource_opened', 'resource', undefined, { title });
     } else {
       setResourceDetail({ title, content: 'Failed to load content. Please try again or check your connection.' });
     }
@@ -347,6 +399,8 @@ const InnerApp: React.FC = () => {
                     view === 'GENDER_SYLLABUS' ? 'Gender Studies' :
                     view === 'INTERVIEW_PREP' ? 'Interview Prep' :
                     view === 'HISTORY' ? 'History' :
+                    view === 'STREAKS' ? 'Streaks' :
+                    view === 'NEWS_EVENTS' ? 'News & Events' :
                     view === 'STUDY_TIMELINE' ? 'Timeline' :
                     view === 'STUDY_VOCAB' ? 'Vocabulary' :
                     view === 'STUDY_ESSAYS' ? 'Important Essays' :
@@ -354,11 +408,11 @@ const InnerApp: React.FC = () => {
                     view === 'RESOURCE_DETAIL' && resourceDetail ? resourceDetail.title :
                     ''
                 }
-                searchQuery={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY'].includes(view) ? searchQuery : undefined}
-                onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY'].includes(view) ? setSearchQuery : undefined}
+                searchQuery={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? searchQuery : undefined}
+                onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
                 searchPlaceholder={t('searchPlaceholder')}
                 onBack={
-                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE'].includes(view) 
+                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS'].includes(view) 
                    ? () => {
                       if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
                       else if (view === 'GENDER_SYLLABUS') setView('CSS_RESOURCES'); // Usually accessed from CSS Resources or Syllabus? Let's check SyllabusHub. 
@@ -369,6 +423,8 @@ const InnerApp: React.FC = () => {
                       else if (view === 'SUBJECT_SELECTION') setView('CSS_RESOURCES');
                       else if (view === 'INTERVIEW_PREP') setView('CSS_RESOURCES');
                       else if (view === 'HISTORY') setView('RESEARCH');
+                      else if (view === 'STREAKS') setView('FEED');
+                      else if (view === 'NEWS_EVENTS') setView('FEED');
                       else if (['STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT'].includes(view)) setView('STUDY_MATERIAL');
                       else if (view === 'RESOURCE_DETAIL') setView(previousView);
                       else if (view === 'PROFILE') setView('FEED');
@@ -661,6 +717,18 @@ const InnerApp: React.FC = () => {
                </motion.div>
             )}
 
+            {view === 'STREAKS' && (
+              <motion.div key="STREAKS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <StreaksView streak={streak} />
+              </motion.div>
+            )}
+
+            {view === 'NEWS_EVENTS' && (
+              <motion.div key="NEWS_EVENTS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <NewsEventsView searchQuery={searchQuery} />
+              </motion.div>
+            )}
+
             {view === 'PROFILE' && (
               <motion.div
                 key="PROFILE"
@@ -686,7 +754,10 @@ const InnerApp: React.FC = () => {
 
             {view === 'AI_SUMMARIZER' && (
               <motion.div key="AI_SUMMARIZER" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
-                <AiSummarizer />
+                <AiSummarizer
+                  initialText={historyPrefill?.type === 'ai_summarizer' ? String(historyPrefill.snapshot?.input ?? '') : undefined}
+                  initialSummary={historyPrefill?.type === 'ai_summarizer' ? String(historyPrefill.snapshot?.summary ?? '') : undefined}
+                />
               </motion.div>
             )}
 
@@ -700,7 +771,10 @@ const InnerApp: React.FC = () => {
                 transition={pageTransition}
                 className="h-full"
               >
-                <FlashcardGenerator />
+                <FlashcardGenerator
+                  initialTopic={historyPrefill?.type === 'flashcards' ? String(historyPrefill.snapshot?.topic ?? historyPrefill.query ?? '') : undefined}
+                  initialFlashcards={historyPrefill?.type === 'flashcards' ? (historyPrefill.snapshot?.flashcards ?? undefined) : undefined}
+                />
               </motion.div>
             )}
 
@@ -714,7 +788,11 @@ const InnerApp: React.FC = () => {
                 transition={pageTransition}
                 className="h-full flex-1 overflow-y-auto"
               >
-                <AiLectureNotesGenerator />
+                <AiLectureNotesGenerator
+                  initialMode={historyPrefill?.type === 'ai_lecture_notes' ? historyPrefill.snapshot?.mode : undefined}
+                  initialInput={historyPrefill?.type === 'ai_lecture_notes' ? String(historyPrefill.snapshot?.input ?? '') : undefined}
+                  initialNotes={historyPrefill?.type === 'ai_lecture_notes' ? String(historyPrefill.snapshot?.notes ?? '') : undefined}
+                />
               </motion.div>
             )}
 
@@ -728,7 +806,10 @@ const InnerApp: React.FC = () => {
                 transition={pageTransition}
                 className="h-full flex-1 overflow-y-auto"
               >
-                <AiMindMapGenerator />
+                <AiMindMapGenerator
+                  initialTopic={historyPrefill?.type === 'ai_mind_map' ? String(historyPrefill.snapshot?.topic ?? historyPrefill.query ?? '') : undefined}
+                  initialMarkdown={historyPrefill?.type === 'ai_mind_map' ? String(historyPrefill.snapshot?.markdown ?? '') : undefined}
+                />
               </motion.div>
             )}
 

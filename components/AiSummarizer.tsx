@@ -1,25 +1,40 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
 import { fetchSummarization } from '../services/groqService';
 import { SparklesIcon, DocumentIcon, CopyIcon } from './Icons';
 import Modal from './Modal';
+import { addToHistory, logAction } from '../services/historyService';
 
 interface Props {
   onBack?: () => void; // Optional if we want to use it as a standalone page or modal
+  initialText?: string;
+  initialSummary?: string;
 }
 
-const AiSummarizer: React.FC<Props> = ({ onBack }) => {
+const AiSummarizer: React.FC<Props> = ({ onBack, initialText, initialSummary }) => {
   const [text, setText] = useState('');
   const [summary, setSummary] = useState('');
   const [loading, setLoading] = useState(false);
   const [copyModalOpen, setCopyModalOpen] = useState(false);
   const [copyErrorModalOpen, setCopyErrorModalOpen] = useState(false);
 
+  useEffect(() => {
+    if (typeof initialText === 'string') setText(initialText);
+    if (typeof initialSummary === 'string') setSummary(initialSummary);
+  }, [initialText, initialSummary]);
+
   const handleSummarize = async () => {
     if (!text.trim()) return;
     setLoading(true);
+    logAction('ai_summarizer_started', 'ai_summarizer', undefined, { preview: text.slice(0, 160) });
     const result = await fetchSummarization(text);
     setSummary(result);
+    addToHistory(
+      (text.trim().split('\n')[0] || text.trim()).slice(0, 120),
+      'ai_summarizer',
+      { input: text.slice(0, 5000), summary: result }
+    );
+    logAction('ai_summarizer_completed', 'ai_summarizer', undefined, { length: result?.length ?? 0 });
     setLoading(false);
   };
 

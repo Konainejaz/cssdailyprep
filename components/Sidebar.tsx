@@ -12,6 +12,7 @@ import {
   CalendarIcon,
   BellIcon,
   SparklesIcon,
+  ClockIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
 } from "./Icons";
@@ -425,6 +426,9 @@ const Sidebar: React.FC<SidebarProps> = ({
           <NavItem viewState="FEED" icon={BookIcon} label={t("dailyFeed")} />
           <NavItem viewState="QUIZ" icon={TrophyIcon} label={t("mockExams")} />
           <NavItem viewState="RESEARCH" icon={GlobeIcon} label={t("researchLab")} />
+          <NavItem viewState="HISTORY" icon={ClockIcon} label="History" />
+          <NavItem viewState="STREAKS" icon={FireIcon} label="Streaks" />
+          <NavItem viewState="NEWS_EVENTS" icon={BellIcon} label="News & Events" isNew />
           <NavItem viewState="NOTE_LIST" icon={NoteIcon} label={t("myNotes")} />
         </div>
 
@@ -481,6 +485,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                     animate={{ x: 0, opacity: 1 }}
                     transition={{ delay: idx * 0.1 }}
                     className="flex gap-3 items-start group cursor-pointer"
+                    onClick={() => handleNav("NEWS_EVENTS")}
                   >
                     <div
                       className={`mt-1.5 w-1.5 h-1.5 rounded-full shrink-0 ${

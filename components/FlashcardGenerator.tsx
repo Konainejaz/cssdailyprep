@@ -1,21 +1,35 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { fetchFlashcards } from '../services/groqService';
 import { SparklesIcon, PlusIcon, ChevronLeftIcon, CheckIcon } from './Icons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { addToHistory, logAction } from '../services/historyService';
 
-const FlashcardGenerator: React.FC = () => {
+interface Props {
+  initialTopic?: string;
+  initialFlashcards?: Array<{ front: string; back: string }>;
+}
+
+const FlashcardGenerator: React.FC<Props> = ({ initialTopic, initialFlashcards }) => {
   const [topic, setTopic] = useState('');
   const [flashcards, setFlashcards] = useState<Array<{ front: string, back: string }>>([]);
   const [loading, setLoading] = useState(false);
   const [flippedIndex, setFlippedIndex] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (typeof initialTopic === 'string') setTopic(initialTopic);
+    if (Array.isArray(initialFlashcards)) setFlashcards(initialFlashcards);
+  }, [initialTopic, initialFlashcards]);
 
   const handleGenerate = async () => {
     if (!topic.trim()) return;
     setLoading(true);
     setFlashcards([]);
     setFlippedIndex(null);
+    logAction('flashcards_started', 'flashcards', undefined, { topic });
     const cards = await fetchFlashcards(topic);
     setFlashcards(cards);
+    addToHistory(topic.trim().slice(0, 120), 'flashcards', { topic: topic.trim(), flashcards: cards });
+    logAction('flashcards_completed', 'flashcards', undefined, { topic, count: cards?.length ?? 0 });
     setLoading(false);
   };
 

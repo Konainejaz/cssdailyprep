@@ -172,7 +172,7 @@ const HistoryView: React.FC<HistoryViewProps> = ({ onBack, onSelect, searchQuery
       <Modal
         open={clearModalOpen}
         title="Clear history?"
-        description="This will remove your entire search history from this device."
+        description="This will remove your entire history from your account."
         onClose={() => setClearModalOpen(false)}
         primaryAction={{
           label: isClearing ? 'Clearing...' : 'Clear',

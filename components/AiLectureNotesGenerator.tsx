@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import ReactMarkdown from 'react-markdown';
 import { 
@@ -6,16 +6,29 @@ import {
   DocumentIcon, PlayIcon, CheckIcon 
 } from './Icons';
 import { fetchLectureNotes, fetchYouTubeNotes, fetchUrlNotes } from '../services/groqService';
+import { addToHistory, logAction } from '../services/historyService';
 
 type InputMode = 'TEXT' | 'YOUTUBE' | 'PDF';
 
-const AiLectureNotesGenerator: React.FC = () => {
+interface Props {
+  initialMode?: InputMode;
+  initialInput?: string;
+  initialNotes?: string;
+}
+
+const AiLectureNotesGenerator: React.FC<Props> = ({ initialMode, initialInput, initialNotes }) => {
   const [mode, setMode] = useState<InputMode>('TEXT');
   const [textInput, setTextInput] = useState('');
   const [notes, setNotes] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (initialMode) setMode(initialMode);
+    if (typeof initialInput === 'string') setTextInput(initialInput);
+    if (typeof initialNotes === 'string') setNotes(initialNotes);
+  }, [initialMode, initialInput, initialNotes]);
 
   const handleGenerateNotes = async () => {
     if (!textInput.trim()) {
@@ -29,6 +42,7 @@ const AiLectureNotesGenerator: React.FC = () => {
 
     try {
       let generatedNotes = '';
+      logAction('lecture_notes_started', 'ai_lecture_notes', undefined, { mode, preview: textInput.slice(0, 160) });
       if (mode === 'TEXT') {
         generatedNotes = await fetchLectureNotes(textInput);
       } else if (mode === 'YOUTUBE') {
@@ -37,6 +51,12 @@ const AiLectureNotesGenerator: React.FC = () => {
         generatedNotes = await fetchUrlNotes(textInput);
       }
       setNotes(generatedNotes);
+      addToHistory(
+        (textInput.trim().split('\n')[0] || textInput.trim()).slice(0, 120),
+        'ai_lecture_notes',
+        { mode, input: textInput.slice(0, 5000), notes: generatedNotes }
+      );
+      logAction('lecture_notes_completed', 'ai_lecture_notes', undefined, { mode, length: generatedNotes?.length ?? 0 });
     } catch (err) {
       setError('Failed to generate notes. Please check your input and try again.');
       console.error('Error generating lecture notes:', err);

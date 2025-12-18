@@ -12,6 +12,7 @@ import {
   UnderlineIcon, StrikeIcon, OrderedListIcon
 } from './Icons';
 import { saveNote, deleteNote } from '../services/storageService';
+import { logAction } from '../services/historyService';
 import Modal from './Modal';
 
 interface NoteEditorProps {
@@ -252,6 +253,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ initialNote, onClose, onSave })
     };
 
     await saveNote(newNote);
+    logAction('note_saved', 'note', String(newNote.id), { title: newNote.title, subject: newNote.subject ?? null });
     onSave();
   };
 
@@ -265,6 +267,7 @@ const NoteEditor: React.FC<NoteEditorProps> = ({ initialNote, onClose, onSave })
     setIsDeleting(true);
     try {
       await deleteNote(initialNote.id);
+      logAction('note_deleted', 'note', String(initialNote.id), { title: initialNote.title ?? null });
       setConfirmOpen(false);
       onSave();
     } finally {
