@@ -42,7 +42,7 @@ import AiMindMapGenerator from './components/AiMindMapGenerator';
 import { addToHistory, logAction } from './services/historyService';
 import { 
   BookIcon, NoteIcon, PlusIcon, ChevronLeftIcon, SearchIcon, ShareIcon, 
-  GlobeIcon, TrophyIcon, MenuIcon 
+  GlobeIcon, TrophyIcon, MenuIcon, ClockIcon, FireIcon, BellIcon, SparklesIcon, ListIcon
 } from './components/Icons';
 
 // --- Static Data ---
@@ -405,6 +405,7 @@ const InnerApp: React.FC = () => {
                     view === 'STUDY_VOCAB' ? 'Vocabulary' :
                     view === 'STUDY_ESSAYS' ? 'Important Essays' :
                     view === 'STUDY_ISLAMIAT' ? 'Islamiat' :
+                    view === 'AI_MIND_MAP' ? 'Mind Map Generator' :
                     view === 'RESOURCE_DETAIL' && resourceDetail ? resourceDetail.title :
                     ''
                 }
@@ -412,7 +413,7 @@ const InnerApp: React.FC = () => {
                 onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
                 searchPlaceholder={t('searchPlaceholder')}
                 onBack={
-                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS'].includes(view) 
+                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP'].includes(view) 
                    ? () => {
                       if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
                       else if (view === 'GENDER_SYLLABUS') setView('CSS_RESOURCES'); // Usually accessed from CSS Resources or Syllabus? Let's check SyllabusHub. 
@@ -425,6 +426,7 @@ const InnerApp: React.FC = () => {
                       else if (view === 'HISTORY') setView('RESEARCH');
                       else if (view === 'STREAKS') setView('FEED');
                       else if (view === 'NEWS_EVENTS') setView('FEED');
+                      else if (view === 'AI_MIND_MAP') setView('RESEARCH');
                       else if (['STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT'].includes(view)) setView('STUDY_MATERIAL');
                       else if (view === 'RESOURCE_DETAIL') setView(previousView);
                       else if (view === 'PROFILE') setView('FEED');
@@ -867,27 +869,28 @@ const InnerApp: React.FC = () => {
 
         {/* Mobile Bottom Nav */}
         {!['NOTE_EDIT', 'QUIZ'].includes(view) && (
-          <nav className="md:hidden bg-white border-t border-gray-200 flex justify-around items-center px-2 sm:px-6 py-2 pb-[env(safe-area-inset-bottom,20px)] z-20 min-h-[72px] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-all duration-300">
-             <button onClick={() => setView('FEED')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'FEED' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
-                <BookIcon className="w-6 h-6 mb-1" />
-                <span className="text-[11px] sm:text-xs font-medium">Feed</span>
-             </button>
-             <button onClick={() => setView('QUIZ')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'QUIZ' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
-                <TrophyIcon className="w-6 h-6 mb-1" />
-                <span className="text-[11px] sm:text-xs font-medium">Mock</span>
-             </button>
-             <button onClick={() => setView('RESEARCH')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'RESEARCH' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
-                 <GlobeIcon className="w-6 h-6 mb-1" />
-                 <span className="text-[11px] sm:text-xs font-medium">Lab</span>
-               </button>
-               <button onClick={() => setView('NOTE_LIST')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'NOTE_LIST' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
-                <NoteIcon className="w-6 h-6 mb-1" />
-                <span className="text-[11px] sm:text-xs font-medium">Notes</span>
-              </button>
-              <button onClick={() => setMobileMenuOpen(true)} className="flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 text-gray-400 hover:bg-gray-50">
-                <MenuIcon className="w-6 h-6 mb-1" />
-                <span className="text-[11px] sm:text-xs font-medium">Menu</span>
-              </button>
+          <nav className="md:hidden bg-white border-t border-gray-200 flex justify-around items-center px-2 sm:px-4 py-2 pb-[env(safe-area-inset-bottom,20px)] z-20 min-h-[72px] shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] transition-all duration-300">
+            <button onClick={() => setView('FEED')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'FEED' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+              <BookIcon className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Feed</span>
+            </button>
+            <button onClick={() => setView('QUIZ')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'QUIZ' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+              <TrophyIcon className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Mock</span>
+            </button>
+            <button onClick={() => setView('RESEARCH')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'RESEARCH' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+              <GlobeIcon className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Lab</span>
+            </button>
+            <button onClick={() => setView('NEWS_EVENTS')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 relative ${view === 'NEWS_EVENTS' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+              <BellIcon className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">News</span>
+              <span className="absolute top-1 right-1 w-2 h-2 bg-blue-500 rounded-full"></span>
+            </button>
+            <button onClick={() => setView('NOTE_LIST')} className={`flex flex-col items-center p-2 rounded-xl flex-1 active:scale-95 transition-all duration-200 ${view === 'NOTE_LIST' ? 'text-pakGreen-600 bg-pakGreen-50' : 'text-gray-400 hover:bg-gray-50'}`}>
+              <NoteIcon className="w-5 h-5 mb-1" />
+              <span className="text-[10px] font-medium">Notes</span>
+            </button>
           </nav>
         )}
       </div>

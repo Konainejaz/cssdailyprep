@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ViewState } from "../types";
 import { StreakData } from "../services/storageService";
 import {
@@ -44,6 +44,30 @@ const Sidebar: React.FC<SidebarProps> = ({
 }) => {
   const { t } = useLanguage();
   const [isCollapsed, setIsCollapsed] = useState(false);
+  const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : false);
+
+  // Device detection and sidebar state management
+  useEffect(() => {
+    const checkDevice = () => {
+      const width = window.innerWidth;
+      const newIsDesktop = width >= 768;
+      
+      setIsDesktop(newIsDesktop);
+      
+      // If device is not desktop (mobile/tablet), ensure sidebar is not collapsed
+      if (!newIsDesktop && isCollapsed) {
+        setIsCollapsed(false);
+      }
+    };
+
+    // Initial check
+    checkDevice();
+
+    // Listen for window resize
+    window.addEventListener('resize', checkDevice);
+    
+    return () => window.removeEventListener('resize', checkDevice);
+  }, [isCollapsed]);
 
   const handleNav = (v: ViewState) => {
     onViewChange(v);
@@ -359,9 +383,9 @@ const Sidebar: React.FC<SidebarProps> = ({
         animate={{ rotate: isCollapsed ? 180 : 0 }}
         whileHover={{ scale: 1.1 }}
         whileTap={{ scale: 0.9 }}
-        onClick={() => setIsCollapsed(!isCollapsed)}
+        onClick={() => isDesktop && setIsCollapsed(!isCollapsed)}
         className={`
-          hidden md:flex absolute -right-3 top-9 z-50
+          ${isDesktop ? 'flex' : 'hidden'} absolute -right-3 top-9 z-50
           w-6 h-6 items-center justify-center rounded-full
           bg-gray-900 border border-gray-700 text-gray-400 hover:text-white hover:border-pakGreen-500 hover:bg-gray-800
           shadow-lg shadow-black/50 transition-colors duration-200

@@ -184,28 +184,28 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <div className="bg-gray-900/5 border border-gray-200 rounded-2xl p-1 flex">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="bg-gray-900/5 border border-gray-200 rounded-2xl p-1 flex w-full sm:w-auto">
               <button
                 onClick={() => setActiveTab('overview')}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition ${activeTab === 'overview' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
+                className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${activeTab === 'overview' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
               >
                 Overview
               </button>
               <button
                 onClick={() => setActiveTab('activity')}
-                className={`px-4 py-2 rounded-xl text-sm font-bold transition ${activeTab === 'activity' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
+                className={`flex-1 sm:flex-initial px-3 sm:px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition ${activeTab === 'activity' ? 'bg-white shadow text-gray-900' : 'text-gray-500 hover:text-gray-800'}`}
               >
                 Activity
               </button>
             </div>
 
-            <div className="bg-white border border-gray-200 rounded-2xl p-1 flex">
+            <div className="bg-white border border-gray-200 rounded-2xl p-1 flex w-full sm:w-auto">
               {[7, 14, 30].map(d => (
                 <button
                   key={d}
                   onClick={() => setDays(d as 7 | 14 | 30)}
-                  className={`px-3 py-2 rounded-xl text-xs font-bold transition ${days === d ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
+                  className={`flex-1 sm:flex-initial px-2 sm:px-3 py-2 rounded-xl text-xs font-bold transition ${days === d ? 'bg-gray-900 text-white' : 'text-gray-600 hover:bg-gray-50'}`}
                 >
                   {d}d
                 </button>
@@ -224,7 +224,7 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
               exit="exit"
               className="space-y-6"
             >
-              <motion.div variants={itemVariants} className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <motion.div variants={itemVariants} className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <motion.div
                   whileHover={{ rotateX: 6, rotateY: -6, scale: 1.01 }}
                   transition={{ type: 'spring', stiffness: 260, damping: 18 }}
@@ -283,7 +283,7 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
                 </motion.div>
               </motion.div>
 
-              <motion.div variants={itemVariants} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <motion.div variants={itemVariants} className="grid grid-cols-1 xl:grid-cols-2 gap-4">
                 <div className="rounded-3xl border border-gray-200 bg-white p-5">
                   <div className="flex items-center justify-between mb-4">
                     <h3 className="text-lg font-bold text-gray-900">Top sections</h3>
@@ -300,12 +300,12 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
                       {analytics.sortedViews.map(({ view, ms }) => {
                         const pct = analytics.totalMs > 0 ? Math.round((ms / analytics.totalMs) * 100) : 0;
                         return (
-                          <div key={view} className="flex items-center gap-3">
-                            <div className="w-32 text-sm font-semibold text-gray-700 truncate">{viewLabel(view)}</div>
-                            <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden">
-                              <div className="h-full bg-gradient-to-r from-pakGreen-600 to-emerald-500" style={{ width: `${pct}%` }} />
+                          <div key={view} className="flex items-center gap-2 min-w-0">
+                            <div className="w-24 sm:w-32 flex-shrink-0 text-xs sm:text-sm font-semibold text-gray-700 truncate">{viewLabel(view)}</div>
+                            <div className="flex-1 h-2 rounded-full bg-gray-100 overflow-hidden min-w-0">
+                              <div className="h-full bg-gradient-to-r from-pakGreen-600 to-emerald-500" style={{ '--progress-width': `${pct}%`, width: 'var(--progress-width)' } as React.CSSProperties} />
                             </div>
-                            <div className="w-24 text-right text-xs text-gray-500">{formatDuration(ms)}</div>
+                            <div className="w-16 sm:w-24 flex-shrink-0 text-right text-xs text-gray-500">{formatDuration(ms)}</div>
                           </div>
                         );
                       })}
@@ -315,28 +315,141 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
                   )}
                 </div>
 
-                <div className="rounded-3xl border border-gray-200 bg-white p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-lg font-bold text-gray-900">Daily time</h3>
-                    <span className="text-xs text-gray-500">minutes per day</span>
+                <div className="rounded-3xl border border-gray-200 bg-gradient-to-br from-white via-orange-50/30 to-white p-4 sm:p-6 shadow-lg shadow-orange-500/5">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-orange-500 to-red-500 flex items-center justify-center text-white shadow-lg flex-shrink-0">
+                        <ClockIcon className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="text-lg font-bold text-gray-900">Daily Study Time</h3>
+                        <p className="text-xs text-gray-500">Track your learning consistency</p>
+                      </div>
+                    </div>
+                    <div className="text-center sm:text-right">
+                      <div className="text-2xl font-bold text-orange-600">
+                        {analytics.dayBuckets.reduce((sum, d) => sum + d.minutes, 0)}m
+                      </div>
+                      <div className="text-xs text-gray-500">Total time</div>
+                    </div>
                   </div>
+
                   {loading ? (
-                    <div className="h-32 rounded-2xl bg-gray-100 animate-pulse" />
+                    <div className="h-40 sm:h-48 rounded-2xl bg-gradient-to-br from-gray-100 to-gray-50 animate-pulse mx-4 sm:mx-6" />
                   ) : analytics.dayBuckets.length > 0 ? (
-                    <div className="flex items-end gap-1.5 h-32">
-                      {analytics.dayBuckets.map(d => (
-                        <div key={d.day} className="flex-1 flex flex-col items-center gap-2">
-                          <div
-                            className="w-full rounded-xl bg-gradient-to-t from-orange-500 to-red-500"
-                            style={{ height: `${Math.max(6, Math.min(120, d.minutes * 2))}px` }}
-                            title={`${d.day}: ${d.minutes}m`}
-                          />
-                          <div className="text-[10px] text-gray-400">{d.day.slice(5)}</div>
+                    <div className="relative mx-4 sm:mx-6">
+                      {/* Chart Background Grid */}
+                      <div className="absolute inset-0 h-40 sm:h-48">
+                        <div className="h-full w-full relative">
+                          {[0, 30, 60, 90, 120].map((val, i) => (
+                            <div
+                              key={val}
+                              className="absolute w-full border-t border-gray-100"
+                              style={{ bottom: `${(val / 120) * 100}%` }}
+                            >
+                              <span className="absolute -left-8 -top-2 text-xs text-gray-400 hidden sm:block">{val}</span>
+                            </div>
+                          ))}
                         </div>
-                      ))}
+                      </div>
+
+                      {/* Chart Bars */}
+                      <div className="relative h-40 sm:h-48 flex items-end justify-start gap-1 sm:gap-2 overflow-x-auto no-scrollbar pb-4 px-1">
+                        {analytics.dayBuckets.map((d, idx) => {
+                          const minutes = d.minutes;
+                          const heightPercent = Math.max(5, Math.min(100, (minutes / 120) * 100));
+                          const isToday = d.day === new Date().toISOString().slice(0, 10);
+                          
+                          return (
+                            <motion.div
+                              key={d.day}
+                              initial={{ opacity: 0, y: 20 }}
+                              animate={{ opacity: 1, y: 0 }}
+                              transition={{ delay: idx * 0.05, duration: 0.3 }}
+                              className="flex-shrink-0 flex flex-col items-center gap-2 min-w-[32px] sm:min-w-[40px] md:min-w-[48px]"
+                            >
+                              <div className="relative w-full group">
+                                {/* Bar */}
+                                <motion.div
+                                  whileHover={{ scale: 1.05 }}
+                                  className={`w-full rounded-t-lg sm:rounded-t-xl transition-all duration-300 cursor-pointer ${
+                                    isToday 
+                                      ? 'bg-gradient-to-t from-orange-500 to-red-500 shadow-lg shadow-orange-500/30' 
+                                      : 'bg-gradient-to-t from-orange-400/80 to-red-400/80 hover:from-orange-500 hover:to-red-500'
+                                  }`}
+                                  style={{ 
+                                    height: `${heightPercent}%`,
+                                    minHeight: '8px'
+                                  }}
+                                  title={`${d.day}: ${minutes} minutes`}
+                                >
+                                  {/* Hover tooltip */}
+                                  <div className="absolute -top-12 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-xs px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 whitespace-nowrap pointer-events-none z-10">
+                                    <div className="font-bold text-center">{minutes}m</div>
+                                    <div className="text-gray-300 text-center text-[10px]">{d.day.slice(5)}</div>
+                                    <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 translate-y-1/2 rotate-45 w-2 h-2 bg-gray-900"></div>
+                                  </div>
+                                </motion.div>
+                                
+                                {/* Today indicator */}
+                                {isToday && (
+                                  <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse border-2 border-white"></div>
+                                )}
+                              </div>
+                              
+                              {/* Date label */}
+                              <div className={`text-[9px] sm:text-[10px] font-medium text-center ${
+                                isToday ? 'text-orange-600 font-bold' : 'text-gray-400'
+                              }`}>
+                                {d.day.slice(5)}
+                              </div>
+                            </motion.div>
+                          );
+                        })}
+                      </div>
+
+                      {/* Statistics Row */}
+                      <div className="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                        <div className="text-center p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-green-50 to-emerald-50 border border-green-100">
+                          <div className="text-lg sm:text-xl font-bold text-green-600">
+                            {Math.max(...analytics.dayBuckets.map(d => d.minutes))}m
+                          </div>
+                          <div className="text-xs text-gray-600">Best day</div>
+                        </div>
+                        <div className="text-center p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-blue-50 to-cyan-50 border border-blue-100">
+                          <div className="text-lg sm:text-xl font-bold text-blue-600">
+                            {Math.round(analytics.dayBuckets.reduce((sum, d) => sum + d.minutes, 0) / analytics.dayBuckets.length)}m
+                          </div>
+                          <div className="text-xs text-gray-600">Daily avg</div>
+                        </div>
+                        <div className="text-center p-3 sm:p-4 rounded-2xl bg-gradient-to-br from-purple-50 to-pink-50 border border-purple-100">
+                          <div className="text-lg sm:text-xl font-bold text-purple-600">
+                            {analytics.dayBuckets.filter(d => d.minutes > 0).length}
+                          </div>
+                          <div className="text-xs text-gray-600">Active days</div>
+                        </div>
+                      </div>
                     </div>
                   ) : (
-                    <div className="text-sm text-gray-500">No daily time data yet.</div>
+                    <div className="py-12 sm:py-16 text-center">
+                      <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-orange-100 to-red-100 flex items-center justify-center mx-auto mb-6 shadow-lg">
+                        <ClockIcon className="w-10 h-10 text-orange-500" />
+                      </div>
+                      <h4 className="text-lg font-bold text-gray-900 mb-2">Start Your Learning Journey</h4>
+                      <p className="text-sm text-gray-500 mb-4 max-w-sm mx-auto">
+                        Track your daily study sessions to see your learning patterns and build consistent habits
+                      </p>
+                      <div className="flex items-center justify-center gap-4 text-xs text-gray-400">
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-orange-500"></div>
+                          <span>Study time</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <div className="w-3 h-3 rounded-full bg-red-500"></div>
+                          <span>Progress</span>
+                        </div>
+                      </div>
+                    </div>
                   )}
                 </div>
               </motion.div>
@@ -392,18 +505,18 @@ const StreaksView: React.FC<Props> = ({ streak }) => {
                         initial={{ opacity: 0, y: 8 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: Math.min(0.25, idx * 0.01) }}
-                        className="p-4 md:p-5 flex items-start gap-4"
+                        className="p-3 sm:p-5 flex items-start gap-3 sm:gap-4"
                       >
-                        <div className="w-10 h-10 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-700 shrink-0">
-                          <Icon className="w-5 h-5" />
+                        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center text-gray-700 shrink-0">
+                          <Icon className="w-4 h-4 sm:w-5 sm:h-5" />
                         </div>
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-3">
-                            <div className="min-w-0">
-                              <div className="font-bold text-gray-900 truncate">{title}</div>
-                              {metaPreview ? <div className="text-sm text-gray-500 truncate">{metaPreview}</div> : null}
+                          <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-3">
+                            <div className="min-w-0 flex-1">
+                              <div className="font-bold text-gray-900 text-sm sm:text-base leading-tight break-words">{title}</div>
+                              {metaPreview ? <div className="text-xs sm:text-sm text-gray-500 mt-1 leading-tight break-words">{metaPreview}</div> : null}
                             </div>
-                            <div className="text-xs text-gray-400 shrink-0">{when}</div>
+                            <div className="text-xs text-gray-400 shrink-0 whitespace-nowrap">{when}</div>
                           </div>
                         </div>
                       </motion.div>

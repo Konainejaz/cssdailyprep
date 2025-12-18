@@ -286,24 +286,24 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
   };
 
   return (
-    <div className="p-4 md:p-8 bg-gray-50 min-h-full">
+    <div className="p-3 sm:p-4 md:p-8 bg-gray-50 min-h-full">
       <motion.div
         initial="visible" 
         animate="visible"
         variants={containerVariants}
-        className="max-w-6xl mx-auto space-y-8"
+        className="max-w-6xl mx-auto space-y-6 sm:space-y-8"
       >
         {/* Header */}
-        <motion.div variants={itemVariants} className="text-center space-y-4">
-          <div className="flex justify-center items-center gap-3">
-            <div className="p-3 bg-purple-100 rounded-2xl">
-              <ShareIcon className="w-8 h-8 text-purple-600" />
+        <motion.div variants={itemVariants} className="text-center space-y-3 sm:space-y-4">
+          <div className="flex justify-center items-center gap-2 sm:gap-3">
+            <div className="p-1.5 sm:p-2 md:p-3 bg-purple-100 rounded-2xl">
+              <ShareIcon className="w-5 h-5 sm:w-6 sm:h-6 md:w-8 md:h-8 text-purple-600" />
             </div>
-            <h1 className="text-3xl md:text-4xl font-bold text-gray-900 tracking-tight">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 tracking-tight">
               Mind Map Generator
             </h1>
           </div>
-          <p className="text-gray-600 max-w-2xl mx-auto text-lg">
+          <p className="text-gray-600 max-w-2xl mx-auto text-sm sm:text-base px-3 sm:px-4">
             Visualize complex topics instantly. Enter a subject, and let AI structure it for you.
           </p>
         </motion.div>
@@ -311,16 +311,16 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
         {/* Input Section */}
         <motion.div 
           variants={itemVariants}
-          className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-6 md:p-8 border border-gray-100"
+          className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 p-3 sm:p-4 md:p-6 lg:p-8 border border-gray-100"
         >
-          <label htmlFor="topic" className="block text-gray-700 font-semibold mb-3">
+          <label htmlFor="topic" className="block text-gray-700 font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
             What do you want to visualize?
           </label>
-          <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex flex-col gap-3 sm:gap-4 lg:flex-row lg:items-center lg:gap-4">
             <input
               id="topic"
               type="text"
-              className="flex-1 p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-400 font-medium"
+              className="flex-1 p-3 sm:p-4 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all text-gray-700 placeholder-gray-400 font-medium text-sm sm:text-base min-h-[48px] sm:min-h-[56px]"
               placeholder="e.g. History of Pakistan, Photosynthesis, CSS Exam Syllabus..."
               value={topic}
               onChange={(e) => setTopic(e.target.value)}
@@ -332,7 +332,7 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
               onClick={handleGenerate}
               disabled={loading || !isReady}
               className={`
-                px-8 py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 shadow-lg transition-all whitespace-nowrap
+                px-4 sm:px-6 lg:px-8 py-3 sm:py-4 rounded-xl font-bold text-white flex items-center justify-center gap-2 shadow-lg transition-all whitespace-nowrap text-sm sm:text-base min-h-[48px] sm:min-h-[56px] lg:w-auto lg:flex-shrink-0
                 ${(loading || !isReady) ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700'}
               `}
             >
@@ -372,37 +372,38 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
               ref={resultsDockRef}
               className="bg-white rounded-2xl shadow-xl shadow-gray-200/50 overflow-hidden border border-gray-100"
             >
-              <div className="p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
-                <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                  <DocumentIcon className="w-5 h-5 text-purple-500" />
-                  Mind Map
+              <div className="p-2 sm:p-3 md:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center">
+                <h3 className="font-bold text-gray-700 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base">
+                  <DocumentIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-500" />
+                  <span className="truncate">Mind Map</span>
                 </h3>
-                <div className="flex gap-2">
+                <div className="flex gap-1 sm:gap-2">
                   <button
                     type="button"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-white border border-gray-200 text-gray-400"
+                    className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-400 min-h-[36px] sm:min-h-[40px]"
                     title="Full Screen"
                     disabled
                   >
-                    <MaximizeIcon className="w-4 h-4" />
+                    <MaximizeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
                   <button
                     type="button"
-                    className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-white border border-gray-200 text-gray-400"
+                    className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-400 min-h-[36px] sm:min-h-[40px]"
                     title="Copy Markdown"
                     disabled
                   >
-                    <DocumentIcon className="w-4 h-4" />
+                    <DocumentIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                   </button>
                 </div>
               </div>
 
-              <div className="bg-white p-4">
-                <div className="h-[600px]" />
+              <div className="bg-white p-1.5 sm:p-2 md:p-4">
+                <div className="h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px]" />
               </div>
 
-              <div className="p-4 bg-gray-50 text-xs text-gray-500 text-center border-t border-gray-100">
-                Tip: Click on any node to see detailed explanation. Use toolbar to zoom/pan.
+              <div className="p-2 sm:p-3 md:p-4 bg-gray-50 text-xs text-gray-500 text-center border-t border-gray-100">
+                <span className="hidden sm:inline">Tip: Click on any node to see detailed explanation. Use toolbar to zoom/pan.</span>
+                <span className="sm:hidden">Tap nodes • Toolbar to zoom</span>
               </div>
             </div>
 
@@ -421,38 +422,38 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
                   }
                   className={`fixed bg-white flex flex-col ${isFullScreen ? 'z-[100]' : 'z-[20] rounded-2xl shadow-xl shadow-gray-200/50 overflow-hidden border border-gray-100'}`}
                 >
-                  <div className={`p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center ${isFullScreen ? 'shadow-sm z-10' : ''}`}>
-                    <h3 className="font-bold text-gray-700 flex items-center gap-2">
-                      <DocumentIcon className="w-5 h-5 text-purple-500" />
-                      {isFullScreen ? 'Mind Map (Full Screen)' : 'Mind Map'}
+                  <div className={`p-2 sm:p-3 md:p-4 border-b border-gray-100 bg-gray-50 flex justify-between items-center ${isFullScreen ? 'shadow-sm z-10' : ''}`}>
+                    <h3 className="font-bold text-gray-700 flex items-center gap-1.5 sm:gap-2 text-xs sm:text-sm md:text-base">
+                      <DocumentIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-5 md:h-5 text-purple-500" />
+                      <span className="truncate">{isFullScreen ? 'Mind Map (Full Screen)' : 'Mind Map'}</span>
                     </h3>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 sm:gap-2">
                       {isFullScreen ? (
                         <button
                           onClick={() => setIsFullScreen(false)}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+                          className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[36px] sm:min-h-[40px]"
                           title="Exit Full Screen"
                         >
-                          <MinimizeIcon className="w-4 h-4" />
+                          <MinimizeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                           <span className="hidden sm:inline">Exit</span>
                         </button>
                       ) : (
                         <button
                           onClick={() => setIsFullScreen(true)}
-                          className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+                          className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[36px] sm:min-h-[40px]"
                           title="Full Screen"
                         >
-                          <MaximizeIcon className="w-4 h-4" />
+                          <MaximizeIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                         </button>
                       )}
 
                       <button
                         onClick={handleCopyMarkdown}
-                        className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+                        className="flex items-center gap-1 sm:gap-2 px-1.5 sm:px-2 md:px-3 py-1.5 rounded-lg text-xs sm:text-sm font-bold bg-white border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all min-h-[36px] sm:min-h-[40px]"
                         title="Copy Markdown"
                       >
-                        {copied ? <CheckIcon className="w-4 h-4 text-green-600" /> : <DocumentIcon className="w-4 h-4" />}
-                        {copied ? 'Copied' : <span className="hidden sm:inline">Copy Text</span>}
+                        {copied ? <CheckIcon className="w-3 h-3 sm:w-4 sm:h-4 text-green-600" /> : <DocumentIcon className="w-3 h-3 sm:w-4 sm:h-4" />}
+                        {copied ? <span className="hidden sm:inline">Copied</span> : <span className="hidden sm:inline">Copy Text</span>}
                       </button>
                     </div>
                   </div>
@@ -469,8 +470,9 @@ const AiMindMapGenerator: React.FC<Props> = ({ initialTopic, initialMarkdown }) 
                   </div>
 
                   {!isFullScreen && (
-                    <div className="p-4 bg-gray-50 text-xs text-gray-500 text-center border-t border-gray-100">
-                      Tip: Click on any node to see detailed explanation. Use toolbar to zoom/pan.
+                    <div className="p-2 sm:p-3 md:p-4 bg-gray-50 text-xs text-gray-500 text-center border-t border-gray-100">
+                      <span className="hidden sm:inline">Tip: Click on any node to see detailed explanation. Use toolbar to zoom/pan.</span>
+                      <span className="sm:hidden">Tap nodes • Toolbar to zoom</span>
                     </div>
                   )}
                 </motion.div>,
