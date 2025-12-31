@@ -1,5 +1,5 @@
 import React from 'react';
-import { ViewState } from '../types';
+import { Exam, ViewState } from '../types';
 import ProfileDropdown from './ProfileDropdown';
 import { MenuIcon, SearchIcon, ChevronLeftIcon } from './Icons';
 
@@ -14,6 +14,9 @@ interface TopBarProps {
   actionButton?: React.ReactNode;
   subHeader?: React.ReactNode;
   subtitle?: string;
+  exam?: Exam;
+  onExamChange?: (exam: Exam) => void;
+  examOptions?: Array<{ key: Exam; label: string }>;
 }
 
 const TopBar: React.FC<TopBarProps> = ({ 
@@ -26,7 +29,10 @@ const TopBar: React.FC<TopBarProps> = ({
   searchPlaceholder,
   actionButton,
   subHeader,
-  subtitle
+  subtitle,
+  exam,
+  onExamChange,
+  examOptions
 }) => {
   return (
     <div className="sticky top-0 z-30 w-full bg-white/80 backdrop-blur-md border-b border-gray-200/50 shadow-sm transition-all duration-200">
@@ -73,6 +79,20 @@ const TopBar: React.FC<TopBarProps> = ({
               className="w-48 lg:w-64 bg-gray-100/50 border border-transparent focus:bg-white focus:border-pakGreen-200 focus:ring-2 focus:ring-pakGreen-100 rounded-full py-2 pl-9 pr-4 text-sm transition-all"
             />
           </div>
+        )}
+
+        {exam && onExamChange && examOptions && examOptions.length > 0 && (
+          <select
+            value={exam}
+            onChange={(e) => onExamChange(e.target.value as Exam)}
+            className="hidden md:block bg-gray-100/60 hover:bg-gray-100 border border-transparent focus:bg-white focus:border-pakGreen-200 focus:ring-2 focus:ring-pakGreen-100 rounded-full px-3 py-2 text-sm font-bold text-gray-800 transition-all"
+          >
+            {examOptions.map(opt => (
+              <option key={opt.key} value={opt.key}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
         )}
 
         {actionButton}

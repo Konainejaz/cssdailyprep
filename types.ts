@@ -7,12 +7,17 @@ export enum Subject {
   GENDER_STUDIES = "Gender Studies",
   POLITICAL_SCIENCE = "Political Science",
   ESSAY = "English Essay",
+  ENGLISH_PRECIS = "English (Precis and Composition)",
+  GENERAL_SCIENCE_ABILITY = "General Science & Ability",
   CURRENT_AFFAIRS = "Current Affairs",
   ISLAMIAT = "Islamiat",
+  COMPARATIVE_RELIGIONS = "Comparative Study of Major Religions",
   ALL = "All Subjects",
   ALL_COMPULSORY = "All Compulsory Subjects",
   ALL_OPTIONAL = "All Optional Subjects"
 }
+
+export type Exam = 'CSS' | 'PMS' | 'FPSC' | 'PPSC';
 
 export interface Article {
   id: string;
@@ -114,7 +119,7 @@ export interface StudyIslamiatItem {
   keyTakeaways?: string[];
 }
 
-export type ViewState = 'FEED' | 'NOTE_LIST' | 'NOTE_EDIT' | 'ARTICLE_DETAIL' | 'RESEARCH' | 'QUIZ' | 'QUIZ_SESSION' | 'STUDY_MATERIAL' | 'SYLLABUS' | 'CSS_RESOURCES' | 'RESOURCE_DETAIL' | 'GENDER_SYLLABUS' | 'INTERVIEW_PREP' | 'SUBJECT_SELECTION' | 'STUDY_TIMELINE' | 'STUDY_VOCAB' | 'STUDY_ESSAYS' | 'STUDY_ISLAMIAT' | 'AUTH_LOGIN' | 'AUTH_REGISTER' | 'AUTH_FORGOT' | 'PROFILE' | 'ADMIN_PANEL' | 'HISTORY' | 'AI_SUMMARIZER' | 'FLASHCARDS' | 'AI_LECTURE_NOTES' | 'AI_MIND_MAP' | 'STREAKS' | 'NEWS_EVENTS';
+export type ViewState = 'FEED' | 'NOTE_LIST' | 'NOTE_EDIT' | 'ARTICLE_DETAIL' | 'RESEARCH' | 'QUIZ' | 'QUIZ_SESSION' | 'STUDY_MATERIAL' | 'SYLLABUS' | 'EXAM_SYLLABUS_DETAIL' | 'CSS_RESOURCES' | 'PAST_PAPERS' | 'RESOURCE_DETAIL' | 'GENDER_SYLLABUS' | 'ESSAY_SYLLABUS' | 'ENGLISH_PRECIS_SYLLABUS' | 'GSA_SYLLABUS' | 'CURRENT_AFFAIRS_SYLLABUS' | 'PAK_AFFAIRS_SYLLABUS' | 'ISLAMIAT_SYLLABUS' | 'COMP_RELIGIONS_SYLLABUS' | 'OPTIONAL_SYLLABUS_DETAIL' | 'INTERVIEW_PREP' | 'SUBJECT_SELECTION' | 'STUDY_TIMELINE' | 'STUDY_VOCAB' | 'STUDY_ESSAYS' | 'STUDY_ISLAMIAT' | 'AUTH_LOGIN' | 'AUTH_REGISTER' | 'AUTH_FORGOT' | 'PROFILE' | 'ADMIN_PANEL' | 'HISTORY' | 'AI_SUMMARIZER' | 'FLASHCARDS' | 'AI_LECTURE_NOTES' | 'AI_MIND_MAP' | 'STREAKS' | 'NEWS_EVENTS';
 
 export interface SidebarItem {
   title: string;

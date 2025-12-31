@@ -6,7 +6,15 @@ const groq = new Groq({
 
 const MODEL_ID = 'llama-3.1-8b-instant';
 
-const COMPULSORY_SUBJECTS = ["English Essay", "Pak Affairs", "Current Affairs", "Islamiat"];
+const COMPULSORY_SUBJECTS = [
+  "English Essay",
+  "English (Precis and Composition)",
+  "General Science & Ability",
+  "Current Affairs",
+  "Pak Affairs",
+  "Islamiat",
+  "Comparative Study of Major Religions"
+];
 const OPTIONAL_SUBJECTS = ["International Relations", "Political Science", "Foreign Affairs", "Gender Studies"];
 
 export default async function handler(req, res) {
@@ -30,7 +38,7 @@ export default async function handler(req, res) {
 }
 
 const generateQuiz = async (subject, difficulty, count) => {
-  const promptSubject = subject === "All Compulsory Subjects" ? "Compulsory Subjects (Essay, Pak Affairs, Current Affairs, Islamiat)" :
+  const promptSubject = subject === "All Compulsory Subjects" ? "Compulsory Subjects (English Essay, English Precis & Composition, General Science & Ability, Current Affairs, Pakistan Affairs, Islamiat OR Comparative Religions)" :
                         subject === "All Optional Subjects" ? "Optional Subjects (IR, Pol Science, Gender Studies)" :
                         subject;
 

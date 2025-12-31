@@ -1,0 +1,42 @@
+/* Scrollbar styles for Subject Selection Guide */
+.subject-selection-guide-content {
+  /* Firefox scrollbar styling */
+  scrollbar-width: thin;
+  scrollbar-color: #d1d5db #f3f4f6;
+  /* Ensure proper height calculation */
+  max-height: calc(100vh - 60px);
+  min-height: 400px;
+}
+
+/* WebKit scrollbar styling (Chrome, Safari, Edge) */
+.subject-selection-guide-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.subject-selection-guide-content::-webkit-scrollbar-track {
+  background: #f3f4f6;
+  border-radius: 4px;
+}
+
+.subject-selection-guide-content::-webkit-scrollbar-thumb {
+  background: #d1d5db;
+  border-radius: 4px;
+  min-height: 20px;
+}
+
+.subject-selection-guide-content::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}
+
+.subject-selection-guide-content::-webkit-scrollbar-thumb:active {
+  background: #6b7280;
+}
+
+/* Fallback for older browsers - ensure basic scrolling works */
+@supports not (scrollbar-width: thin) {
+  .subject-selection-guide-content {
+    overflow: -moz-scrollbars-vertical;
+    overflow-x: hidden;
+    overflow-y: auto;
+  }
+}

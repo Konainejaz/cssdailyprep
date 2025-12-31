@@ -2,27 +2,29 @@ import React, { useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Modal from './Modal';
 import { BellIcon, GlobeIcon, CalendarIcon } from './Icons';
-import { NEWS_EVENTS } from '../constants';
-
-type NewsItem = (typeof NEWS_EVENTS)[number];
+import { LinkItem, NEWS_EVENTS } from '../constants';
 
 type Props = {
   searchQuery?: string;
+  items?: LinkItem[];
+  title?: string;
+  subtitle?: string;
 };
 
-const NewsEventsView: React.FC<Props> = ({ searchQuery = '' }) => {
-  const [selected, setSelected] = useState<NewsItem | null>(null);
+const NewsEventsView: React.FC<Props> = ({ searchQuery = '', items, title = 'News & Events', subtitle = 'Official portals and trusted resources with direct links' }) => {
+  const data = items && Array.isArray(items) ? items : ([...NEWS_EVENTS] as unknown as LinkItem[]);
+  const [selected, setSelected] = useState<LinkItem | null>(null);
   const [activeType, setActiveType] = useState<string>('All');
 
   const types = useMemo(() => {
     const set = new Set<string>();
-    for (const item of NEWS_EVENTS) set.add(item.type);
+    for (const item of data) set.add(item.type);
     return ['All', ...Array.from(set)];
-  }, []);
+  }, [data]);
 
   const filtered = useMemo(() => {
     const q = searchQuery.trim().toLowerCase();
-    return NEWS_EVENTS.filter(item => {
+    return data.filter(item => {
       if (activeType !== 'All' && item.type !== activeType) return false;
       if (!q) return true;
       return (
@@ -31,7 +33,7 @@ const NewsEventsView: React.FC<Props> = ({ searchQuery = '' }) => {
         item.source.toLowerCase().includes(q)
       );
     });
-  }, [activeType, searchQuery]);
+  }, [activeType, data, searchQuery]);
 
   const containerVariants = {
     hidden: { opacity: 0, y: 12 },
@@ -53,8 +55,8 @@ const NewsEventsView: React.FC<Props> = ({ searchQuery = '' }) => {
                 <BellIcon className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
               <div className="min-w-0">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">News & Events</h1>
-                <p className="text-white/70 text-xs sm:text-sm">Official portals and trusted resources with direct links</p>
+                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">{title}</h1>
+                <p className="text-white/70 text-xs sm:text-sm">{subtitle}</p>
               </div>
             </div>
 
@@ -166,4 +168,3 @@ const NewsEventsView: React.FC<Props> = ({ searchQuery = '' }) => {
 };
 
 export default NewsEventsView;
-

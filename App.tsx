@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
 import ReactMarkdown from 'react-markdown'; 
-import { Subject, Article, Note, ViewState, ResearchResult } from './types';
+import { Exam, Subject, Article, Note, ViewState, ResearchResult } from './types';
 import { fetchDailyArticles, researchTopic, fetchStudyMaterial } from './services/groqService';
 import { getNotes, updateStreak, StreakData, migrateNotes } from './services/storageService';
 import ArticleCard from './components/ArticleCard';
@@ -17,6 +17,14 @@ import CssResourcesView from './components/CssResourcesView';
 import SyllabusHub from './components/SyllabusHub';
 import ResourceDetailView from './components/ResourceDetailView';
 import GenderStudiesSyllabus from './components/GenderStudiesSyllabus';
+import OptionalSyllabusDetail from './components/OptionalSyllabusDetail';
+import EssaySyllabus from './components/EssaySyllabus';
+import EnglishPrecisSyllabus from './components/EnglishPrecisSyllabus';
+import GeneralScienceAbilitySyllabus from './components/GeneralScienceAbilitySyllabus';
+import CurrentAffairsSyllabus from './components/CurrentAffairsSyllabus';
+import PakAffairsSyllabus from './components/PakAffairsSyllabus';
+import IslamiatSyllabus from './components/IslamiatSyllabus';
+import ComparativeReligionsSyllabus from './components/ComparativeReligionsSyllabus';
 import InterviewPreparation from './components/InterviewPreparation';
 import SubjectSelectionGuide from './components/SubjectSelectionGuide';
 import ResearchCenter from './components/ResearchCenter';
@@ -44,9 +52,18 @@ import {
   BookIcon, NoteIcon, PlusIcon, ChevronLeftIcon, SearchIcon, ShareIcon, 
   GlobeIcon, TrophyIcon, MenuIcon, ClockIcon, FireIcon, BellIcon, SparklesIcon, ListIcon
 } from './components/Icons';
+import { EXAM_INTERACTIVE_SYLLABI, EXAM_NEWS_EVENTS, EXAM_OPTIONS, EXAM_RESOURCES, OPTIONAL_SYLLABI, ResourceItem } from './constants';
 
 // --- Static Data ---
-const COMPULSORY_SUBJECTS = [Subject.ESSAY, Subject.PAK_AFFAIRS, Subject.CURRENT_AFFAIRS, Subject.ISLAMIAT];
+const COMPULSORY_SUBJECTS = [
+  Subject.ESSAY,
+  Subject.ENGLISH_PRECIS,
+  Subject.GENERAL_SCIENCE_ABILITY,
+  Subject.CURRENT_AFFAIRS,
+  Subject.PAK_AFFAIRS,
+  Subject.ISLAMIAT,
+  Subject.COMPARATIVE_RELIGIONS
+];
 const OPTIONAL_SUBJECTS = [Subject.INT_RELATIONS, Subject.POLITICAL_SCIENCE, Subject.FOREIGN_AFFAIRS, Subject.GENDER_STUDIES];
 
 // --- Inner App Component (inside Provider) ---
@@ -65,6 +82,7 @@ const InnerApp: React.FC = () => {
   // --- State ---
   const [view, setView] = useState<ViewState>('FEED');
   const [activeSubject, setActiveSubject] = useState<Subject>(Subject.ALL);
+  const [activeExam, setActiveExam] = useState<Exam>('CSS');
   
   // Content State
   const [articles, setArticles] = useState<Article[]>([]);
@@ -81,6 +99,8 @@ const InnerApp: React.FC = () => {
   // Study Material State
   const [studyCache, setStudyCache] = useState<Record<string, any>>({});
   const [activeStudyId, setActiveStudyId] = useState<string>('');
+  const [activeOptionalSyllabusKey, setActiveOptionalSyllabusKey] = useState<string>('');
+  const [activeExamSyllabusKey, setActiveExamSyllabusKey] = useState<string>('');
 
   // Selection State
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
@@ -88,6 +108,12 @@ const InnerApp: React.FC = () => {
   const [resourceDetail, setResourceDetail] = useState<{title: string, content: string} | null>(null);
   const [previousView, setPreviousView] = useState<ViewState>('FEED');
   const [historyPrefill, setHistoryPrefill] = useState<{ type: string; query: string; snapshot?: any } | null>(null);
+
+  const activeOptionalSyllabus = activeOptionalSyllabusKey ? OPTIONAL_SYLLABI[activeOptionalSyllabusKey] : undefined;
+  const activeExamSyllabus = activeExamSyllabusKey
+    ? [...(EXAM_INTERACTIVE_SYLLABI[activeExam]?.compulsory ?? []), ...(EXAM_INTERACTIVE_SYLLABI[activeExam]?.optional ?? [])]
+        .find(p => p.key === activeExamSyllabusKey)
+    : undefined;
 
   // Sidebar State
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -135,6 +161,7 @@ const InnerApp: React.FC = () => {
            setView(s.view as ViewState);
         }
         if (s.activeSubject) setActiveSubject(s.activeSubject as Subject);
+        if (s.activeExam) setActiveExam(s.activeExam as Exam);
         if (s.selectedArticle) setSelectedArticle(s.selectedArticle as Article);
         if (s.resourceDetail) setResourceDetail(s.resourceDetail as { title: string; content: string });
         if (s.previousView) setPreviousView(s.previousView as ViewState);
@@ -157,6 +184,13 @@ const InnerApp: React.FC = () => {
       }
     }
   }, [session, authLoading, view]);
+
+  useEffect(() => {
+    setActiveExamSyllabusKey('');
+    if (view === 'EXAM_SYLLABUS_DETAIL') {
+      setView('SYLLABUS');
+    }
+  }, [activeExam]);
 
   useEffect(() => {
     const now = Date.now();
@@ -194,10 +228,10 @@ const InnerApp: React.FC = () => {
 
   useEffect(() => {
     try {
-      const s = { view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult, studyCache };
+      const s = { view, activeSubject, activeExam, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult, studyCache };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(s));
     } catch {}
-  }, [view, activeSubject, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult, studyCache]);
+  }, [view, activeSubject, activeExam, selectedArticle, resourceDetail, previousView, researchQueryInput, researchResult, studyCache]);
 
   const refreshNotes = async () => { setNotes(await getNotes()); };
 
@@ -323,6 +357,19 @@ const InnerApp: React.FC = () => {
     setLoading(false);
   };
 
+  const handleResourceItemSelect = (item: ResourceItem) => {
+    if (item.mode === 'static' && item.prompt) {
+      setPreviousView(view);
+      setView('RESOURCE_DETAIL');
+      setResourceDetail({ title: item.title, content: item.prompt });
+      addToHistory(item.title, 'resource', { content: item.prompt, sources: [] });
+      logAction('resource_opened', 'resource', undefined, { title: item.title, mode: 'static' });
+      return;
+    }
+
+    handleResourceRequest(item.prompt || item.title, item.title, item.category);
+  };
+
   const handleLoadMore = async () => {
     setLoadingMore(true);
     const newArticles = await fetchDailyArticles(activeSubject);
@@ -386,17 +433,30 @@ const InnerApp: React.FC = () => {
             <TopBar 
                 onNavigate={setView} 
                 onMenuClick={() => setMobileMenuOpen(true)}
+                exam={activeExam}
+                onExamChange={setActiveExam}
+                examOptions={EXAM_OPTIONS}
                 title={
                     view === 'FEED' ? t('dailyFeed') :
                     view === 'RESEARCH' ? t('researchLab') :
                     view === 'NOTE_LIST' ? t('myNotes') :
                     view === 'CSS_RESOURCES' ? t('cssResources') :
+                    view === 'PAST_PAPERS' ? t('pastPapers') :
                     view === 'STUDY_MATERIAL' ? t('studyMaterial') :
                     view === 'SYLLABUS' ? t('syllabus') :
                     view === 'PROFILE' ? 'My Profile' :
                     view === 'ADMIN_PANEL' ? 'Admin Panel' :
                     view === 'SUBJECT_SELECTION' ? 'Subject Selection' :
                     view === 'GENDER_SYLLABUS' ? 'Gender Studies' :
+                    view === 'ESSAY_SYLLABUS' ? 'English Essay Syllabus' :
+                    view === 'ENGLISH_PRECIS_SYLLABUS' ? 'English (Precis & Composition)' :
+                    view === 'GSA_SYLLABUS' ? 'General Science & Ability' :
+                    view === 'CURRENT_AFFAIRS_SYLLABUS' ? 'Current Affairs' :
+                    view === 'PAK_AFFAIRS_SYLLABUS' ? 'Pakistan Affairs' :
+                    view === 'ISLAMIAT_SYLLABUS' ? 'Islamic Studies' :
+                    view === 'COMP_RELIGIONS_SYLLABUS' ? 'Comparative Religions' :
+                    view === 'OPTIONAL_SYLLABUS_DETAIL' ? (activeOptionalSyllabus?.title ?? 'Optional Syllabus') :
+                    view === 'EXAM_SYLLABUS_DETAIL' ? (activeExamSyllabus?.title ?? 'Syllabus') :
                     view === 'INTERVIEW_PREP' ? 'Interview Prep' :
                     view === 'HISTORY' ? 'History' :
                     view === 'STREAKS' ? 'Streaks' :
@@ -412,18 +472,17 @@ const InnerApp: React.FC = () => {
                     view === 'RESOURCE_DETAIL' && resourceDetail ? resourceDetail.title :
                     ''
                 }
-                searchQuery={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? searchQuery : undefined}
-                onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'GENDER_SYLLABUS', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
+                searchQuery={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'PAST_PAPERS', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'EXAM_SYLLABUS_DETAIL', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? searchQuery : undefined}
+                onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'PAST_PAPERS', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'EXAM_SYLLABUS_DETAIL', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
                 searchPlaceholder={t('searchPlaceholder')}
                 onBack={
-                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'GENDER_SYLLABUS', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP', 'AI_LECTURE_NOTES', 'FLASHCARDS', 'AI_SUMMARIZER', 'NOTE_LIST', 'RESEARCH', 'CSS_RESOURCES', 'STUDY_MATERIAL'].includes(view) 
+                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'EXAM_SYLLABUS_DETAIL', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP', 'AI_LECTURE_NOTES', 'FLASHCARDS', 'AI_SUMMARIZER', 'NOTE_LIST', 'RESEARCH', 'CSS_RESOURCES', 'PAST_PAPERS', 'STUDY_MATERIAL'].includes(view) 
                    ? () => {
                       if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
-                      else if (view === 'GENDER_SYLLABUS') setView('CSS_RESOURCES'); // Usually accessed from CSS Resources or Syllabus? Let's check SyllabusHub. 
-                      // SyllabusHub calls onOpenGenderStudies. SyllabusHub is usually entered from StudyMaterial. 
-                      // Wait, SyllabusHub is a hub. Let's assume Back goes to StudyMaterial.
-                      // But if GenderSyllabus is opened from SyllabusHub, back should go to SyllabusHub.
-                      // Let's refine this logic.
+                      else if (view === 'EXAM_SYLLABUS_DETAIL') { setActiveExamSyllabusKey(''); setView('SYLLABUS'); }
+                      else if (view === 'GENDER_SYLLABUS') setView('SYLLABUS');
+                      else if (view === 'OPTIONAL_SYLLABUS_DETAIL') { setActiveOptionalSyllabusKey(''); setView('SYLLABUS'); }
+                      else if (['ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS'].includes(view)) setView('SYLLABUS');
                       else if (view === 'SUBJECT_SELECTION') setView('CSS_RESOURCES');
                       else if (view === 'INTERVIEW_PREP') setView('CSS_RESOURCES');
                       else if (view === 'HISTORY') setView('RESEARCH');
@@ -436,6 +495,7 @@ const InnerApp: React.FC = () => {
                       else if (view === 'NOTE_LIST') setView('FEED');
                       else if (view === 'RESEARCH') setView('FEED');
                       else if (view === 'CSS_RESOURCES') setView('FEED');
+                      else if (view === 'PAST_PAPERS') setView('FEED');
                       else if (view === 'STUDY_MATERIAL') setView('FEED');
                       else if (['STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT'].includes(view)) setView('STUDY_MATERIAL');
                       else if (view === 'RESOURCE_DETAIL') setView(previousView);
@@ -651,10 +711,23 @@ const InnerApp: React.FC = () => {
             {view === 'CSS_RESOURCES' && (
               <motion.div key="CSS_RESOURCES" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
                 <CssResourcesView 
-                  onSelect={handleResourceRequest} 
+                  onSelectItem={handleResourceItemSelect} 
                   onOpenInterviewPrep={() => setView('INTERVIEW_PREP')}
                   onOpenSubjectSelection={() => setView('SUBJECT_SELECTION')}
                   searchQuery={searchQuery}
+                  items={EXAM_RESOURCES[activeExam].filter(i => !i.category.toLowerCase().includes('past'))}
+                />
+              </motion.div>
+            )}
+
+            {view === 'PAST_PAPERS' && (
+              <motion.div key="PAST_PAPERS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <CssResourcesView 
+                  onSelectItem={handleResourceItemSelect} 
+                  onOpenInterviewPrep={() => setView('INTERVIEW_PREP')}
+                  onOpenSubjectSelection={() => setView('SUBJECT_SELECTION')}
+                  searchQuery={searchQuery}
+                  items={EXAM_RESOURCES[activeExam].filter(i => i.category.toLowerCase().includes('past'))}
                 />
               </motion.div>
             )}
@@ -675,7 +748,152 @@ const InnerApp: React.FC = () => {
               <motion.div key="SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
                 <SyllabusHub 
                   onBack={() => setView('STUDY_MATERIAL')} 
-                  onOpenGenderStudies={() => setView('GENDER_SYLLABUS')} 
+                  onOpenGenderStudies={() => setView('GENDER_SYLLABUS')}
+                  onOpenOptional={(key) => { setActiveOptionalSyllabusKey(key); setView('OPTIONAL_SYLLABUS_DETAIL'); }}
+                  onOpenExamPaper={(key) => { setActiveExamSyllabusKey(key); setView('EXAM_SYLLABUS_DETAIL'); }}
+                  onOpenEssay={() => setView('ESSAY_SYLLABUS')}
+                  onOpenEnglishPrecis={() => setView('ENGLISH_PRECIS_SYLLABUS')}
+                  onOpenGsa={() => setView('GSA_SYLLABUS')}
+                  onOpenCurrentAffairs={() => setView('CURRENT_AFFAIRS_SYLLABUS')}
+                  onOpenPakAffairs={() => setView('PAK_AFFAIRS_SYLLABUS')}
+                  onOpenIslamiat={() => setView('ISLAMIAT_SYLLABUS')}
+                  onOpenComparativeReligions={() => setView('COMP_RELIGIONS_SYLLABUS')}
+                  exam={activeExam}
+                />
+              </motion.div>
+            )}
+
+            {view === 'EXAM_SYLLABUS_DETAIL' && (
+              <motion.div key="EXAM_SYLLABUS_DETAIL" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                {activeExamSyllabus ? (
+                  <OptionalSyllabusDetail
+                    title={activeExamSyllabus.title}
+                    sections={activeExamSyllabus.sections}
+                    onSaveNote={(t, c) => {
+                      setNoteToEdit({ title: t, content: c, subject: Subject.ALL });
+                      setView('NOTE_EDIT');
+                    }}
+                    searchQuery={searchQuery}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center p-6">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-700 font-serif max-w-lg">
+                      Syllabus not found.
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {view === 'OPTIONAL_SYLLABUS_DETAIL' && (
+              <motion.div key="OPTIONAL_SYLLABUS_DETAIL" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                {activeOptionalSyllabus ? (
+                  <OptionalSyllabusDetail
+                    title={activeOptionalSyllabus.title}
+                    sections={activeOptionalSyllabus.sections}
+                    onSaveNote={(t, c) => {
+                      setNoteToEdit({ title: t, content: c, subject: activeOptionalSyllabus.noteSubject ?? Subject.ALL_OPTIONAL });
+                      setView('NOTE_EDIT');
+                    }}
+                    searchQuery={searchQuery}
+                  />
+                ) : (
+                  <div className="h-full flex items-center justify-center p-6">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 text-center text-gray-700 font-serif max-w-lg">
+                      Optional syllabus not found.
+                    </div>
+                  </div>
+                )}
+              </motion.div>
+            )}
+
+            {view === 'ESSAY_SYLLABUS' && (
+              <motion.div key="ESSAY_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <EssaySyllabus
+                  onBack={() => setView('SYLLABUS')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.ESSAY });
+                    setView('NOTE_EDIT');
+                  }}
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'ENGLISH_PRECIS_SYLLABUS' && (
+              <motion.div key="ENGLISH_PRECIS_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <EnglishPrecisSyllabus
+                  onBack={() => setView('SYLLABUS')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.ENGLISH_PRECIS });
+                    setView('NOTE_EDIT');
+                  }}
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'GSA_SYLLABUS' && (
+              <motion.div key="GSA_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <GeneralScienceAbilitySyllabus
+                  onBack={() => setView('SYLLABUS')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.GENERAL_SCIENCE_ABILITY });
+                    setView('NOTE_EDIT');
+                  }}
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'CURRENT_AFFAIRS_SYLLABUS' && (
+              <motion.div key="CURRENT_AFFAIRS_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <CurrentAffairsSyllabus
+                  onBack={() => setView('SYLLABUS')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.CURRENT_AFFAIRS });
+                    setView('NOTE_EDIT');
+                  }}
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'PAK_AFFAIRS_SYLLABUS' && (
+              <motion.div key="PAK_AFFAIRS_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <PakAffairsSyllabus
+                  onBack={() => setView('SYLLABUS')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.PAK_AFFAIRS });
+                    setView('NOTE_EDIT');
+                  }}
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'ISLAMIAT_SYLLABUS' && (
+              <motion.div key="ISLAMIAT_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <IslamiatSyllabus
+                  onBack={() => setView('SYLLABUS')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.ISLAMIAT });
+                    setView('NOTE_EDIT');
+                  }}
+                  searchQuery={searchQuery}
+                />
+              </motion.div>
+            )}
+
+            {view === 'COMP_RELIGIONS_SYLLABUS' && (
+              <motion.div key="COMP_RELIGIONS_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <ComparativeReligionsSyllabus
+                  onBack={() => setView('SYLLABUS')}
+                  onSaveNote={(t, c) => {
+                    setNoteToEdit({ title: t, content: c, subject: Subject.COMPARATIVE_RELIGIONS });
+                    setView('NOTE_EDIT');
+                  }}
+                  searchQuery={searchQuery}
                 />
               </motion.div>
             )}
@@ -698,11 +916,12 @@ const InnerApp: React.FC = () => {
             {view === 'GENDER_SYLLABUS' && (
               <motion.div key="GENDER_SYLLABUS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
                 <GenderStudiesSyllabus
-                  onBack={() => setView('CSS_RESOURCES')}
+                  onBack={() => setView('SYLLABUS')}
                   onSaveNote={(t, c) => {
                     setNoteToEdit({ title: t, content: c, subject: Subject.GENDER_STUDIES });
                     setView('NOTE_EDIT');
                   }}
+                  searchQuery={searchQuery}
                 />
               </motion.div>
             )}
@@ -737,7 +956,11 @@ const InnerApp: React.FC = () => {
 
             {view === 'NEWS_EVENTS' && (
               <motion.div key="NEWS_EVENTS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
-                <NewsEventsView searchQuery={searchQuery} />
+                <NewsEventsView
+                  searchQuery={searchQuery}
+                  items={EXAM_NEWS_EVENTS[activeExam]}
+                  title={`${EXAM_OPTIONS.find(o => o.key === activeExam)?.label ?? activeExam} News & Events`}
+                />
               </motion.div>
             )}
 

@@ -485,6 +485,7 @@ const Sidebar: React.FC<SidebarProps> = ({
           )}
           {isCollapsed && <div className="h-px bg-gray-800 my-2 mx-2"></div>}
           <NavItem viewState="CSS_RESOURCES" icon={ListIcon} label={t("cssResources")} />
+          <NavItem viewState="PAST_PAPERS" icon={ListIcon} label={t("pastPapers")} />
           <NavItem viewState="STUDY_MATERIAL" icon={BookIcon} label={t("studyMaterial")} />
           <NavItem viewState="SYLLABUS" icon={BookIcon} label={t("syllabus")} />
         </div>
