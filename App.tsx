@@ -52,7 +52,7 @@ import {
   BookIcon, NoteIcon, PlusIcon, ChevronLeftIcon, SearchIcon, ShareIcon, 
   GlobeIcon, TrophyIcon, MenuIcon, ClockIcon, FireIcon, BellIcon, SparklesIcon, ListIcon
 } from './components/Icons';
-import { EXAM_INTERACTIVE_SYLLABI, EXAM_NEWS_EVENTS, EXAM_OPTIONS, EXAM_RESOURCES, OPTIONAL_SYLLABI, ResourceItem } from './constants';
+import { EXAM_BOOKS, EXAM_INTERACTIVE_SYLLABI, EXAM_NEWS_EVENTS, EXAM_OPTIONS, EXAM_RESOURCES, OPTIONAL_SYLLABI, ResourceItem } from './constants';
 
 // --- Static Data ---
 const COMPULSORY_SUBJECTS = [
@@ -441,6 +441,7 @@ const InnerApp: React.FC = () => {
                     view === 'RESEARCH' ? t('researchLab') :
                     view === 'NOTE_LIST' ? t('myNotes') :
                     view === 'CSS_RESOURCES' ? t('cssResources') :
+                    view === 'BOOKS' ? t('books') :
                     view === 'PAST_PAPERS' ? t('pastPapers') :
                     view === 'STUDY_MATERIAL' ? t('studyMaterial') :
                     view === 'SYLLABUS' ? t('syllabus') :
@@ -472,11 +473,11 @@ const InnerApp: React.FC = () => {
                     view === 'RESOURCE_DETAIL' && resourceDetail ? resourceDetail.title :
                     ''
                 }
-                searchQuery={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'PAST_PAPERS', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'EXAM_SYLLABUS_DETAIL', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? searchQuery : undefined}
-                onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'PAST_PAPERS', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'EXAM_SYLLABUS_DETAIL', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
+                searchQuery={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'BOOKS', 'PAST_PAPERS', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'EXAM_SYLLABUS_DETAIL', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? searchQuery : undefined}
+                onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'BOOKS', 'PAST_PAPERS', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'EXAM_SYLLABUS_DETAIL', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
                 searchPlaceholder={t('searchPlaceholder')}
                 onBack={
-                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'EXAM_SYLLABUS_DETAIL', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP', 'AI_LECTURE_NOTES', 'FLASHCARDS', 'AI_SUMMARIZER', 'NOTE_LIST', 'RESEARCH', 'CSS_RESOURCES', 'PAST_PAPERS', 'STUDY_MATERIAL'].includes(view) 
+                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'EXAM_SYLLABUS_DETAIL', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP', 'AI_LECTURE_NOTES', 'FLASHCARDS', 'AI_SUMMARIZER', 'NOTE_LIST', 'RESEARCH', 'CSS_RESOURCES', 'BOOKS', 'PAST_PAPERS', 'STUDY_MATERIAL'].includes(view) 
                    ? () => {
                       if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
                       else if (view === 'EXAM_SYLLABUS_DETAIL') { setActiveExamSyllabusKey(''); setView('SYLLABUS'); }
@@ -485,6 +486,7 @@ const InnerApp: React.FC = () => {
                       else if (['ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS'].includes(view)) setView('SYLLABUS');
                       else if (view === 'SUBJECT_SELECTION') setView('CSS_RESOURCES');
                       else if (view === 'INTERVIEW_PREP') setView('CSS_RESOURCES');
+                      else if (view === 'BOOKS') setView('CSS_RESOURCES');
                       else if (view === 'HISTORY') setView('RESEARCH');
                       else if (view === 'STREAKS') setView('FEED');
                       else if (view === 'NEWS_EVENTS') setView('FEED');
@@ -716,6 +718,19 @@ const InnerApp: React.FC = () => {
                   onOpenSubjectSelection={() => setView('SUBJECT_SELECTION')}
                   searchQuery={searchQuery}
                   items={EXAM_RESOURCES[activeExam].filter(i => !i.category.toLowerCase().includes('past'))}
+                />
+              </motion.div>
+            )}
+
+            {view === 'BOOKS' && (
+              <motion.div key="BOOKS" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <CssResourcesView 
+                  onSelectItem={handleResourceItemSelect} 
+                  onOpenInterviewPrep={() => setView('INTERVIEW_PREP')}
+                  onOpenSubjectSelection={() => setView('SUBJECT_SELECTION')}
+                  enableCategoryNav
+                  searchQuery={searchQuery}
+                  items={EXAM_BOOKS[activeExam]}
                 />
               </motion.div>
             )}
