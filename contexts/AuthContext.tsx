@@ -10,6 +10,10 @@ type Profile = {
   full_name: string | null;
   avatar_url: string | null;
   role: 'user' | 'admin';
+  plan_id?: 'basic' | 'premium' | null;
+  plan_status?: 'active' | 'inactive' | 'canceled' | null;
+  plan_started_at?: string | null;
+  plan_expires_at?: string | null;
 };
 
 type AuthContextType = {
@@ -166,12 +170,45 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const signInWithGoogle = async () => {
+    const redirectTo = new URL(window.location.origin);
+    redirectTo.pathname = '/';
+
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}`,
+        redirectTo: redirectTo.toString(),
       },
     });
+
+    const errorText =
+      typeof (error as any)?.message === 'string'
+        ? (error as any).message
+        : typeof (error as any)?.msg === 'string'
+          ? (error as any).msg
+          : '';
+
+    const lowered = errorText.toLowerCase();
+    if (lowered.includes('provider is not enabled') || lowered.includes('unsupported provider')) {
+      const configuredUrl =
+        (import.meta as any)?.env?.VITE_SUPABASE_URL ??
+        (import.meta as any)?.env?.SUPABASE_URL ??
+        (supabase as any)?.supabaseUrl ??
+        '';
+      const match = String(configuredUrl).match(/https:\/\/([a-z0-9-]+)\.supabase\.co/i);
+      const projectRef = match?.[1];
+      const providersUrl = projectRef
+        ? `https://supabase.com/dashboard/project/${projectRef}/auth/providers`
+        : 'Supabase Dashboard → Authentication → Providers';
+      const urlConfigUrl = projectRef
+        ? `https://supabase.com/dashboard/project/${projectRef}/auth/url-configuration`
+        : 'Supabase Dashboard → Authentication → URL Configuration';
+
+      return {
+        error: new Error(
+          `Google login is disabled for the Supabase project this app is using.\n\nFix:\n- Enable Google provider: ${providersUrl}\n- Add this site URL (${window.location.origin}) in: ${urlConfigUrl}\n\nCurrent Supabase URL: ${configuredUrl || '(missing)'}`
+        ),
+      };
+    }
     return { error };
   };
 

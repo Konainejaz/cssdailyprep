@@ -103,8 +103,22 @@ const CssResourcesView: React.FC<Props> = ({
               onClick={() => handleClick(item)}
               className="flex items-start md:items-center p-4 rounded-xl border border-gray-100 hover:border-pakGreen-200 hover:bg-pakGreen-50/30 transition-all cursor-pointer group active:scale-[0.98]"
             >
-              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 group-hover:bg-pakGreen-100 group-hover:text-pakGreen-600 transition-colors shrink-0 mt-1 md:mt-0">
-                <GlobeIcon className="w-5 h-5 md:w-6 md:h-6" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 group-hover:bg-pakGreen-100 group-hover:text-pakGreen-600 transition-colors shrink-0 mt-1 md:mt-0 overflow-hidden">
+                {item.imageUrl ? (
+                  <img
+                    src={item.imageUrl}
+                    alt={item.title}
+                    loading="lazy"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      const img = e.currentTarget as HTMLImageElement;
+                      img.onerror = null;
+                      img.src = `https://placehold.co/96x96/png?text=${encodeURIComponent(item.title.split(' ')[0] || 'Book')}`;
+                    }}
+                  />
+                ) : (
+                  <GlobeIcon className="w-5 h-5 md:w-6 md:h-6" />
+                )}
               </div>
               <div className="ml-3 md:ml-4 flex-1 min-w-0">
                 <h3 className="font-bold text-base md:text-lg text-gray-900 group-hover:text-pakGreen-700 transition-colors">
@@ -113,6 +127,11 @@ const CssResourcesView: React.FC<Props> = ({
                 <p className="text-xs md:text-sm text-gray-500 mt-0.5 line-clamp-2 md:line-clamp-none">
                   {item.summary || ''}
                 </p>
+                {item.author && (
+                  <div className="mt-1 text-[11px] md:text-xs text-gray-400">
+                    {item.author}
+                  </div>
+                )}
               </div>
               <span className="hidden md:inline-block text-xs font-medium text-gray-400 border border-gray-200 px-3 py-1 rounded-full ml-2">
                 {item.category}

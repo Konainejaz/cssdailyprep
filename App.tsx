@@ -28,15 +28,16 @@ import ComparativeReligionsSyllabus from './components/ComparativeReligionsSylla
 import InterviewPreparation from './components/InterviewPreparation';
 import SubjectSelectionGuide from './components/SubjectSelectionGuide';
 import ResearchCenter from './components/ResearchCenter';
+import LandingPage from './components/LandingPage';
+import PricingPage from './components/PricingPage';
 import { ArticleSkeleton } from './components/SkeletonLoader';
 import ErrorBoundary from './components/ErrorBoundary';
 import SplashScreen from './components/SplashScreen';
 import TopBar from './components/TopBar';
 import { LanguageProvider, useLanguage } from './contexts/LanguageContext';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
-import { Toaster } from 'react-hot-toast';
-import Login from './components/auth/Login';
-import Register from './components/auth/Register';
+import toast, { Toaster } from 'react-hot-toast';
+import AuthSwipe from './components/auth/AuthSwipe';
 import ForgotPassword from './components/auth/ForgotPassword';
 import ProfileView from './components/ProfileView';
 import AdminPanel from './components/AdminPanel';
@@ -69,7 +70,7 @@ const OPTIONAL_SUBJECTS = [Subject.INT_RELATIONS, Subject.POLITICAL_SCIENCE, Sub
 // --- Inner App Component (inside Provider) ---
 const InnerApp: React.FC = () => {
   const { t } = useLanguage();
-  const { session, isLoading: authLoading } = useAuth();
+  const { session, profile, refreshProfile, isLoading: authLoading } = useAuth();
   
   // Animation Variants
   const pageVariants = {
@@ -81,6 +82,7 @@ const InnerApp: React.FC = () => {
 
   // --- State ---
   const [view, setView] = useState<ViewState>('FEED');
+  const [unauthPreviousView, setUnauthPreviousView] = useState<ViewState>('LANDING');
   const [activeSubject, setActiveSubject] = useState<Subject>(Subject.ALL);
   const [activeExam, setActiveExam] = useState<Exam>('CSS');
   
@@ -105,7 +107,7 @@ const InnerApp: React.FC = () => {
   // Selection State
   const [selectedArticle, setSelectedArticle] = useState<Article | null>(null);
   const [noteToEdit, setNoteToEdit] = useState<Partial<Note> | null>(null);
-  const [resourceDetail, setResourceDetail] = useState<{title: string, content: string} | null>(null);
+  const [resourceDetail, setResourceDetail] = useState<{ title: string; content: string; imageUrl?: string; category?: string; summary?: string } | null>(null);
   const [previousView, setPreviousView] = useState<ViewState>('FEED');
   const [historyPrefill, setHistoryPrefill] = useState<{ type: string; query: string; snapshot?: any } | null>(null);
 
@@ -122,8 +124,45 @@ const InnerApp: React.FC = () => {
 
   const STORAGE_KEY = 'cssprep:app_state';
   const viewSessionRef = useRef<{ view: ViewState; startedAt: number } | null>(null);
+  const hasPremium =
+    profile?.plan_status === 'active' &&
+    profile?.plan_id === 'premium' &&
+    (!profile?.plan_expires_at || new Date(profile.plan_expires_at).getTime() > Date.now());
+
+  const consumePostAuthRedirect = (): ViewState | null => {
+    try {
+      const raw = localStorage.getItem('cssprep:post_auth_redirect_view');
+      if (!raw) return null;
+      localStorage.removeItem('cssprep:post_auth_redirect_view');
+      const candidate = String(raw) as ViewState;
+      if (candidate.startsWith('AUTH_') || candidate === 'LANDING') return null;
+      return candidate;
+    } catch {
+      return null;
+    }
+  };
 
   // --- Effects ---
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const payment = params.get('payment');
+    if (!payment) return;
+
+    if (payment === 'success') {
+      toast.success('Payment successful. Updating your plan…');
+      if (session) {
+        void refreshProfile();
+      }
+    } else if (payment === 'failed') {
+      toast.error('Payment failed. Please try again.');
+    }
+
+    params.delete('payment');
+    params.delete('ref');
+    const query = params.toString();
+    const next = query ? `${window.location.pathname}?${query}` : window.location.pathname;
+    window.history.replaceState({}, '', next);
+  }, [refreshProfile, session]);
   useEffect(() => {
     // Check if mobile
     if (window.innerWidth < 768) {
@@ -163,7 +202,8 @@ const InnerApp: React.FC = () => {
         if (s.activeSubject) setActiveSubject(s.activeSubject as Subject);
         if (s.activeExam) setActiveExam(s.activeExam as Exam);
         if (s.selectedArticle) setSelectedArticle(s.selectedArticle as Article);
-        if (s.resourceDetail) setResourceDetail(s.resourceDetail as { title: string; content: string });
+        if (s.resourceDetail)
+          setResourceDetail(s.resourceDetail as { title: string; content: string; imageUrl?: string; category?: string; summary?: string });
         if (s.previousView) setPreviousView(s.previousView as ViewState);
         if (s.researchQueryInput) setResearchQueryInput(s.researchQueryInput as string);
         if (s.researchResult) setResearchResult(s.researchResult as ResearchResult);
@@ -177,10 +217,11 @@ const InnerApp: React.FC = () => {
     setSearchQuery('');
     
     if (!authLoading) {
-      if (!session && !['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT'].includes(view)) {
-        setView('AUTH_LOGIN');
-      } else if (session && ['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT'].includes(view)) {
-        setView('FEED');
+      if (!session && !['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT', 'LANDING', 'PRICING'].includes(view)) {
+        setView('LANDING');
+      } else if (session && (view === 'LANDING' || ['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT'].includes(view))) {
+        const redirect = consumePostAuthRedirect();
+        setView(redirect ?? 'FEED');
       }
     }
   }, [session, authLoading, view]);
@@ -205,6 +246,14 @@ const InnerApp: React.FC = () => {
 
     viewSessionRef.current = { view, startedAt: now };
   }, [view]);
+
+  useEffect(() => {
+    const aiViews: ViewState[] = ['AI_SUMMARIZER', 'FLASHCARDS', 'AI_LECTURE_NOTES', 'AI_MIND_MAP'];
+    if (aiViews.includes(view) && !hasPremium) {
+      toast.error('Premium plan is required to use AI tools');
+      setView('PRICING');
+    }
+  }, [hasPremium, view]);
 
   useEffect(() => {
     let isMounted = true;
@@ -343,16 +392,16 @@ const InnerApp: React.FC = () => {
   const handleResourceRequest = async (prompt: string, title: string, context?: string) => {
     setPreviousView(view);
     setView('RESOURCE_DETAIL');
-    setResourceDetail({ title, content: '' });
+    setResourceDetail({ title, content: '', category: context });
     setLoading(true);
     const contextualPrompt = context ? `${prompt}\n\nSubject Context: ${context}` : prompt;
     const result = await researchTopic(contextualPrompt);
     if (result) {
-      setResourceDetail({ title, content: result.content });
+      setResourceDetail({ title, content: result.content, category: context });
       addToHistory(title, 'resource', { content: result.content, sources: result.sources ?? [] });
       logAction('resource_opened', 'resource', undefined, { title });
     } else {
-      setResourceDetail({ title, content: 'Failed to load content. Please try again or check your connection.' });
+      setResourceDetail({ title, content: 'Failed to load content. Please try again or check your connection.', category: context });
     }
     setLoading(false);
   };
@@ -361,7 +410,7 @@ const InnerApp: React.FC = () => {
     if (item.mode === 'static' && item.prompt) {
       setPreviousView(view);
       setView('RESOURCE_DETAIL');
-      setResourceDetail({ title: item.title, content: item.prompt });
+      setResourceDetail({ title: item.title, content: item.prompt, imageUrl: item.imageUrl, category: item.category, summary: item.summary });
       addToHistory(item.title, 'resource', { content: item.prompt, sources: [] });
       logAction('resource_opened', 'resource', undefined, { title: item.title, mode: 'static' });
       return;
@@ -400,10 +449,49 @@ const InnerApp: React.FC = () => {
   }
 
   if (!session) {
-     if (view === 'AUTH_REGISTER') return <Register onNavigate={setView} />;
-     if (view === 'AUTH_FORGOT') return <ForgotPassword onNavigate={setView} />;
-     // Default to Login for any other state if not logged in
-     return <Login onNavigate={setView} />;
+     const navigateUnauth = (next: ViewState) => {
+       setUnauthPreviousView(view);
+       setView(next);
+     };
+
+     if (view === 'LANDING')
+       return <LandingPage onNavigate={(next) => navigateUnauth(next)} />;
+     if (view === 'PRICING')
+       return (
+         <PricingPage
+           onBack={() =>
+             setView(unauthPreviousView === 'PRICING' ? 'LANDING' : unauthPreviousView)
+           }
+           onAuthRequired={() => {
+             try {
+               localStorage.setItem('cssprep:post_auth_redirect_view', 'PRICING');
+             } catch {}
+             setUnauthPreviousView('PRICING');
+             setView('AUTH_REGISTER');
+           }}
+         />
+       );
+    if (view === 'AUTH_FORGOT')
+      return <ForgotPassword onNavigate={(next) => navigateUnauth(next)} onBack={() => setView('AUTH_LOGIN')} />;
+
+    if (view === 'AUTH_LOGIN' || view === 'AUTH_REGISTER') {
+      return (
+        <AuthSwipe
+          initialMode={view === 'AUTH_REGISTER' ? 'register' : 'login'}
+          onNavigate={(next) => navigateUnauth(next)}
+          onBack={() => setView(unauthPreviousView === view ? 'LANDING' : unauthPreviousView)}
+        />
+      );
+    }
+
+    // Default to auth for any other state if not logged in
+     return (
+      <AuthSwipe
+        initialMode="login"
+        onNavigate={(next) => navigateUnauth(next)}
+        onBack={() => setView(unauthPreviousView === 'AUTH_LOGIN' ? 'LANDING' : unauthPreviousView)}
+      />
+     );
   }
 
   return (
@@ -429,7 +517,7 @@ const InnerApp: React.FC = () => {
       <div className="flex-1 flex flex-col h-full overflow-hidden relative">
         
         {/* Top Bar */}
-        {!['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT', 'NOTE_EDIT', 'QUIZ', 'ARTICLE_DETAIL', 'PROFILE'].includes(view) && (
+        {!['AUTH_LOGIN', 'AUTH_REGISTER', 'AUTH_FORGOT', 'NOTE_EDIT', 'QUIZ', 'ARTICLE_DETAIL', 'PROFILE', 'PRICING'].includes(view) && (
             <TopBar 
                 onNavigate={setView} 
                 onMenuClick={() => setMobileMenuOpen(true)}
@@ -437,6 +525,7 @@ const InnerApp: React.FC = () => {
                 onExamChange={setActiveExam}
                 examOptions={EXAM_OPTIONS}
                 title={
+                    view === 'PRICING' ? 'Pricing' :
                     view === 'FEED' ? t('dailyFeed') :
                     view === 'RESEARCH' ? t('researchLab') :
                     view === 'NOTE_LIST' ? t('myNotes') :
@@ -477,8 +566,9 @@ const InnerApp: React.FC = () => {
                 onSearchChange={['NOTE_LIST', 'STUDY_MATERIAL', 'CSS_RESOURCES', 'BOOKS', 'PAST_PAPERS', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'EXAM_SYLLABUS_DETAIL', 'HISTORY', 'NEWS_EVENTS'].includes(view) ? setSearchQuery : undefined}
                 searchPlaceholder={t('searchPlaceholder')}
                 onBack={
-                   ['RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'EXAM_SYLLABUS_DETAIL', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP', 'AI_LECTURE_NOTES', 'FLASHCARDS', 'AI_SUMMARIZER', 'NOTE_LIST', 'RESEARCH', 'CSS_RESOURCES', 'BOOKS', 'PAST_PAPERS', 'STUDY_MATERIAL'].includes(view) 
+                   ['PRICING', 'RESOURCE_DETAIL', 'STUDY_TIMELINE', 'STUDY_VOCAB', 'STUDY_ESSAYS', 'STUDY_ISLAMIAT', 'SYLLABUS', 'EXAM_SYLLABUS_DETAIL', 'GENDER_SYLLABUS', 'ESSAY_SYLLABUS', 'ENGLISH_PRECIS_SYLLABUS', 'GSA_SYLLABUS', 'CURRENT_AFFAIRS_SYLLABUS', 'PAK_AFFAIRS_SYLLABUS', 'ISLAMIAT_SYLLABUS', 'COMP_RELIGIONS_SYLLABUS', 'OPTIONAL_SYLLABUS_DETAIL', 'SUBJECT_SELECTION', 'INTERVIEW_PREP', 'HISTORY', 'PROFILE', 'STREAKS', 'NEWS_EVENTS', 'AI_MIND_MAP', 'AI_LECTURE_NOTES', 'FLASHCARDS', 'AI_SUMMARIZER', 'NOTE_LIST', 'RESEARCH', 'CSS_RESOURCES', 'BOOKS', 'PAST_PAPERS', 'STUDY_MATERIAL'].includes(view) 
                    ? () => {
+                      if (view === 'PRICING') setView('FEED');
                       if (view === 'SYLLABUS') setView('STUDY_MATERIAL');
                       else if (view === 'EXAM_SYLLABUS_DETAIL') { setActiveExamSyllabusKey(''); setView('SYLLABUS'); }
                       else if (view === 'GENDER_SYLLABUS') setView('SYLLABUS');
@@ -918,6 +1008,9 @@ const InnerApp: React.FC = () => {
                 <ResourceDetailView
                   title={resourceDetail.title}
                   content={resourceDetail.content}
+                  imageUrl={resourceDetail.imageUrl}
+                  category={resourceDetail.category}
+                  summary={resourceDetail.summary}
                   isLoading={loading}
                   onBack={() => setView(previousView)}
                   onSaveNote={(t, c) => {
@@ -949,7 +1042,14 @@ const InnerApp: React.FC = () => {
                     setView('NOTE_EDIT');
                   }}
                   onHistory={() => setView('HISTORY')}
+                  onUpgrade={() => setView('PRICING')}
                 />
+              </motion.div>
+            )}
+
+            {view === 'PRICING' && (
+              <motion.div key="PRICING" variants={pageVariants} initial="initial" animate="animate" exit="exit" transition={pageTransition} className="h-full">
+                <PricingPage onBack={() => setView('FEED')} onAuthRequired={() => setView('AUTH_REGISTER')} />
               </motion.div>
             )}
 
@@ -992,6 +1092,7 @@ const InnerApp: React.FC = () => {
                 <ProfileView 
                   onBack={() => setView('FEED')} 
                   onMenuClick={() => setMobileMenuOpen(true)}
+                  onUpgrade={() => setView('PRICING')}
                 />
               </motion.div>
             )}

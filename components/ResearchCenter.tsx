@@ -1,9 +1,11 @@
 import React, { useState, useRef, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import toast from 'react-hot-toast';
 import { ResearchResult, MindMapNode } from '../types';
 import { researchTopic, researchWithImages } from '../services/groqService';
 import { addToHistory } from '../services/historyService';
 import { SearchIcon, PlusIcon, CrossIcon, NoteIcon, GlobeIcon, BookIcon } from './Icons';
+import { useAuth } from '../contexts/AuthContext';
 
 // --- Icons ---
 const ImageIcon = ({ className }: { className?: string }) => (
@@ -89,9 +91,15 @@ const MindMapTree: React.FC<{ node: MindMapNode; depth?: number }> = ({ node, de
 interface Props {
   onSaveNote: (title: string, content: string) => void;
   onHistory: () => void;
+  onUpgrade?: () => void;
 }
 
-const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
+const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory, onUpgrade }) => {
+  const { profile } = useAuth();
+  const hasPremium =
+    profile?.plan_status === 'active' &&
+    profile?.plan_id === 'premium' &&
+    (!profile?.plan_expires_at || new Date(profile.plan_expires_at).getTime() > Date.now());
   const [query, setQuery] = useState('');
   const [images, setImages] = useState<string[]>([]);
   const [isResearching, setIsResearching] = useState(false);
@@ -139,6 +147,12 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
   };
 
   const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (!hasPremium) {
+      toast.error('Image research is available on the Premium plan');
+      onUpgrade?.();
+      if (fileInputRef.current) fileInputRef.current.value = '';
+      return;
+    }
     if (e.target.files) {
       const files = Array.from(e.target.files);
       const compressedImages = await Promise.all(
@@ -154,6 +168,11 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
 
   const handleResearch = async (searchQuery: string = query) => {
     if (!searchQuery.trim() && images.length === 0) return;
+    if (images.length > 0 && !hasPremium) {
+      toast.error('Image search is available on the Premium plan');
+      onUpgrade?.();
+      return;
+    }
 
     setIsResearching(true);
     setResult(null);
@@ -288,7 +307,14 @@ const ResearchCenter: React.FC<Props> = ({ onSaveNote, onHistory }) => {
 
                 <div className="flex justify-between items-center px-2 pt-2 border-t border-gray-50">
                    <button 
-                     onClick={() => fileInputRef.current?.click()}
+                     onClick={() => {
+                       if (!hasPremium) {
+                         toast.error('Image research is available on the Premium plan');
+                         onUpgrade?.();
+                         return;
+                       }
+                       fileInputRef.current?.click();
+                     }}
                      className="p-1.5 sm:p-2 text-gray-400 hover:text-pakGreen-600 hover:bg-pakGreen-50 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium"
                    >
                      <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />

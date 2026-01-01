@@ -118,6 +118,29 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onBack }) => {
            </div>
         </div>
 
+        <div className="bg-white rounded-lg shadow mb-6 border border-gray-100">
+          <div className="px-6 py-5">
+            <div className="text-sm font-bold text-gray-900">JazzCash setup requirements</div>
+            <div className="text-xs text-gray-500 mt-1">Backend environment variables (do not paste secrets in UI).</div>
+            <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+              {[
+                'JAZZCASH_MERCHANT_ID',
+                'JAZZCASH_PASSWORD',
+                'JAZZCASH_INTEGRITY_SALT',
+                'JAZZCASH_RETURN_URL',
+                'JAZZCASH_SUCCESS_REDIRECT',
+                'JAZZCASH_FAIL_REDIRECT',
+                'JAZZCASH_ENV (sandbox/live)',
+                'SUPABASE_SERVICE_ROLE_KEY (for callback updates)',
+              ].map((item) => (
+                <div key={item} className="rounded-xl bg-gray-50 border border-gray-100 px-4 py-3 font-semibold text-gray-700">
+                  {item}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
         {loading ? (
           <div className="text-center py-12">Loading...</div>
         ) : (

@@ -7,9 +7,10 @@ import { motion } from 'framer-motion';
 
 interface ForgotPasswordProps {
   onNavigate: (view: ViewState) => void;
+  onBack?: () => void;
 }
 
-const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate, onBack }) => {
   const { resetPassword } = useAuth();
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
@@ -34,6 +35,8 @@ const ForgotPassword: React.FC<ForgotPasswordProps> = ({ onNavigate }) => {
     <AuthLayout 
       title="Reset Password" 
       subtitle="Enter your email to receive a reset link"
+      onBack={onBack}
+      backLabel="Back"
     >
       <form className="mt-8 space-y-6" onSubmit={handleReset}>
         <motion.div

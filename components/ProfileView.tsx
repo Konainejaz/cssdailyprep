@@ -2,12 +2,14 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { supabase } from '../lib/supabase';
 import { motion, AnimatePresence, useMotionValue, useTransform, useSpring } from 'framer-motion';
-import { LogOutIcon, SaveIcon, ShieldIcon, UserIcon, SettingsIcon, BellIcon, CheckIcon, MenuIcon, ChevronLeftIcon } from './Icons';
+import { LogOutIcon, SaveIcon, ShieldIcon, UserIcon, SettingsIcon, BellIcon, CheckIcon, MenuIcon, ChevronLeftIcon, TrophyIcon } from './Icons';
 import Modal from './Modal';
+import { PLANS } from '../constants';
 
 interface ProfileViewProps {
   onBack: () => void;
   onMenuClick?: () => void;
+  onUpgrade?: () => void;
 }
 
 // 3D Tilt Card Component
@@ -54,9 +56,9 @@ const TiltCard = ({ children, className = "" }: { children: React.ReactNode, cla
   );
 };
 
-const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
+const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick, onUpgrade }) => {
   const { profile, refreshProfile, signOut, isLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<'personal' | 'security' | 'preferences'>('personal');
+  const [activeTab, setActiveTab] = useState<'personal' | 'security' | 'preferences' | 'subscription'>('personal');
   
   const [fullName, setFullName] = useState(profile?.full_name || '');
   const [bio, setBio] = useState((profile as any)?.bio || '');
@@ -79,6 +81,13 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
     examUpdates: true,
     dailyTips: false
   });
+  const hasPremium =
+    profile?.plan_status === 'active' &&
+    profile?.plan_id === 'premium' &&
+    (!profile?.plan_expires_at || new Date(profile.plan_expires_at).getTime() > Date.now());
+  const currentPlanId = hasPremium ? 'premium' : 'basic';
+  const currentPlan = PLANS.find(p => p.id === currentPlanId) ?? PLANS[0];
+  const planExpiresText = profile?.plan_expires_at ? new Date(profile.plan_expires_at).toLocaleDateString() : null;
 
   useEffect(() => {
     if (!profile) return;
@@ -373,6 +382,7 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
                             { id: 'personal', label: 'Personal Info', icon: UserIcon },
                             { id: 'security', label: 'Security', icon: ShieldIcon },
                             { id: 'preferences', label: 'Preferences', icon: SettingsIcon },
+                            { id: 'subscription', label: 'Subscription', icon: TrophyIcon },
                           ].map((tab) => (
                             <button
                               key={tab.id}
@@ -585,6 +595,90 @@ const ProfileView: React.FC<ProfileViewProps> = ({ onBack, onMenuClick }) => {
                                         ))}
                                     </div>
                                 </motion.div>
+                            )}
+
+                            {activeTab === 'subscription' && (
+                              <motion.div
+                                key="subscription"
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                exit={{ opacity: 0, x: -20 }}
+                                transition={{ duration: 0.3 }}
+                                className="max-w-3xl mx-auto space-y-6"
+                              >
+                                <div className="mb-8">
+                                  <h3 className="text-2xl font-bold text-gray-900">Subscription</h3>
+                                  <p className="text-gray-500">Manage your plan and access.</p>
+                                </div>
+
+                                <div className="rounded-3xl border border-gray-200/60 bg-white p-6 shadow-sm">
+                                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+                                    <div>
+                                      <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Current plan</div>
+                                      <div className="mt-1 text-2xl font-extrabold text-gray-900">
+                                        {currentPlan.name}{' '}
+                                        <span className="text-gray-400 font-bold">•</span> PKR {currentPlan.pricePkr}
+                                      </div>
+                                      <div className="mt-2 flex flex-wrap items-center gap-2">
+                                        <span
+                                          className={`px-3 py-1 rounded-full text-xs font-extrabold ${
+                                            hasPremium ? 'bg-pakGreen-100 text-pakGreen-700' : 'bg-gray-100 text-gray-700'
+                                          }`}
+                                        >
+                                          {hasPremium ? 'Active' : 'Basic'}
+                                        </span>
+                                        {planExpiresText ? (
+                                          <span className="text-xs font-semibold text-gray-500">Expires: {planExpiresText}</span>
+                                        ) : (
+                                          <span className="text-xs font-semibold text-gray-500">No expiry set</span>
+                                        )}
+                                      </div>
+                                    </div>
+
+                                    <div className="flex gap-3">
+                                      <button
+                                        onClick={() => refreshProfile()}
+                                        className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition"
+                                      >
+                                        Refresh
+                                      </button>
+                                      {!hasPremium && (
+                                        <button
+                                          onClick={() => onUpgrade?.()}
+                                          className="px-5 py-2 rounded-xl bg-pakGreen-600 text-white font-extrabold hover:bg-pakGreen-700 transition"
+                                        >
+                                          Upgrade
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+
+                                  <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5">
+                                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                                      <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Includes</div>
+                                      <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                                        {currentPlan.features.map((f) => (
+                                          <li key={f} className="flex gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-pakGreen-500 mt-2" />
+                                            <span>{f}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                    <div className="rounded-2xl border border-gray-100 bg-gray-50 p-5">
+                                      <div className="text-xs font-bold text-gray-400 uppercase tracking-wider">Restrictions</div>
+                                      <ul className="mt-3 space-y-2 text-sm text-gray-700">
+                                        {(currentPlan.restrictions?.length ? currentPlan.restrictions : ['No restrictions']).map((r) => (
+                                          <li key={r} className="flex gap-2">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-gray-400 mt-2" />
+                                            <span>{r}</span>
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    </div>
+                                  </div>
+                                </div>
+                              </motion.div>
                             )}
                         </AnimatePresence>
                     </div>

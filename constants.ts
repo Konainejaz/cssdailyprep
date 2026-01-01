@@ -24,6 +24,33 @@ export const SUBJECTS_LIST = [
   Subject.ALL_OPTIONAL
 ];
 
+export type PlanId = 'basic' | 'premium';
+
+export const PLANS: Array<{
+  id: PlanId;
+  name: string;
+  pricePkr: number;
+  features: string[];
+  restrictions?: string[];
+}> = [
+  {
+    id: 'basic',
+    name: 'Basic',
+    pricePkr: 1000,
+    features: [
+      'Daily feed, notes, quiz, resources, syllabus, streaks',
+      'Research (text)'
+    ],
+    restrictions: ['No access to AI tools', 'No image search in Research']
+  },
+  {
+    id: 'premium',
+    name: 'Premium',
+    pricePkr: 1600,
+    features: ['Full access (AI tools + research features)']
+  }
+];
+
 // Fallback data in case API fails or for initial state
 export const MOCK_ARTICLES = [
   {
@@ -153,6 +180,8 @@ export type ResourceItem = {
   summary?: string;
   prompt?: string;
   url?: string;
+  imageUrl?: string;
+  author?: string;
   mode?: 'ai' | 'static';
 };
 
@@ -162,11 +191,11 @@ export const EXAM_RESOURCES: Record<Exam, ResourceItem[]> = {
     mode: 'ai',
     summary:
       i.id === 'cr-2'
-        ? 'Trend analysis aur high-yield areas identify karein'
+        ? 'Trend analysis to identify high-yield areas'
         : i.id === 'cr-3'
-          ? 'Viva + psychological prep ke practical tips'
+          ? 'Practical tips for viva and psychological assessment'
           : i.id === 'cr-4'
-            ? 'Optional selection strategy aur scoring trends'
+            ? 'Optional selection strategy and scoring trends'
             : undefined,
   })),
   FPSC: [
@@ -175,16 +204,16 @@ export const EXAM_RESOURCES: Record<Exam, ResourceItem[]> = {
       title: 'GR Syllabi (Official)',
       category: 'Syllabus',
       mode: 'static',
-      summary: 'General Recruitment posts ke official syllabi',
-      prompt: `# FPSC GR Syllabi (Official)\n\n## Ye page kis liye hota hai?\nFPSC General Recruitment (GR) me har post ka syllabus alag hota hai. Official website par **post-wise syllabi** diye hotay hain.\n\n## Use kaise karein (best workflow)\n- Apna advertisement (post + case no.) confirm karein\n- Us post ka syllabus download/verify karein\n- Paper pattern (MCQs vs subjective) aur weightage check karein\n- Topic-wise checklist bana kar prep start karein\n\n## Quick checklist\n- English: comprehension, grammar, vocabulary\n- Quant/Math: arithmetic, ratios, percentages, time & work\n- GK: Pak Affairs, Current Affairs, Everyday Science\n- Post-specific: exact domain topics (ad ke mutabiq)\n\n## Official source (copy/paste)\n- https://www.fpsc.gov.pk/category/gr-syllabi\n`,
+      summary: 'Official syllabi for General Recruitment posts',
+      prompt: `# FPSC GR Syllabi (Official)\n\n## What is this page for?\nFPSC General Recruitment (GR) posts can have different syllabi. The official website provides **post-wise syllabi**.\n\n## How to use it (best workflow)\n- Confirm your advertisement (post + case no.)\n- Download/verify the syllabus for that post\n- Check the paper pattern (MCQs vs subjective) and weightage\n- Build a topic-wise checklist and start preparation\n\n## Quick checklist\n- English: comprehension, grammar, vocabulary\n- Quant/Math: arithmetic, ratios, percentages, time & work\n- GK: Pak Affairs, Current Affairs, Everyday Science\n- Post-specific: exact domain topics (as per the advertisement)\n\n## Official source\n- https://www.fpsc.gov.pk/category/gr-syllabi\n`,
     },
     {
       id: 'fpsc-r-2',
       title: 'Previous Question Papers (Official)',
       category: 'Past Papers',
       mode: 'static',
-      summary: 'FPSC ke uploaded previous papers aur PDFs',
-      prompt: `# FPSC Previous Question Papers (Official)\n\n## Kya milta hai?\nFPSC website par **previous question papers** (multiple categories) upload hotay rehtay hain.\n\n## Kaise use karein\n- Apni post / exam category select karein\n- Last 3–5 years papers collect karein\n- Topic-wise recurring areas highlight karein\n- Time management ke liye timed practice karein\n\n## Official source (copy/paste)\n- https://www.fpsc.gov.pk/category/previous-question-papers\n`,
+      summary: 'Official previous papers and PDFs uploaded by FPSC',
+      prompt: `# FPSC Previous Question Papers (Official)\n\n## What do you get?\nFPSC uploads **previous question papers** (multiple categories) on their website.\n\n## How to use them\n- Select your post / exam category\n- Collect the last 3–5 years papers\n- Highlight recurring topics\n- Do timed practice for time management\n\n## Official source\n- https://www.fpsc.gov.pk/category/previous-question-papers\n`,
     },
     {
       id: 'fpsc-r-3',
@@ -192,7 +221,7 @@ export const EXAM_RESOURCES: Record<Exam, ResourceItem[]> = {
       category: 'Guide',
       mode: 'static',
       summary: 'Account, profile, challan/fee, apply steps',
-      prompt: `# FPSC Apply Online – Quick Guide\n\n## Step-by-step\n1) FPSC website par account/login\n2) Profile complete: personal, education, experience\n3) Post choose karein (advertisement + case no.)\n4) Fee process: challan/online deposit (ad ke mutabiq)\n5) Documents verify: CNIC, photo, degrees, experience letters\n6) Form submit + print/save application\n\n## Common mistakes\n- Wrong case no. select karna\n- Incomplete education/experience dates\n- Photo format/size issue\n- Fee deposit slip details mismatch\n\n## Official portal (copy/paste)\n- https://www.fpsc.gov.pk/\n`,
+      prompt: `# FPSC Apply Online – Quick Guide\n\n## Step-by-step\n1) Create an account / login on the FPSC website\n2) Complete your profile: personal, education, experience\n3) Select the post (advertisement + case no.)\n4) Fee process: challan/online deposit (as per the advertisement)\n5) Verify documents: CNIC, photo, degrees, experience letters\n6) Submit the form and print/save your application\n\n## Common mistakes\n- Selecting the wrong case number\n- Incomplete education/experience dates\n- Photo format/size issues\n- Fee deposit slip details mismatch\n\n## Official portal\n- https://www.fpsc.gov.pk/\n`,
     },
   ],
   PPSC: [
@@ -202,31 +231,31 @@ export const EXAM_RESOURCES: Record<Exam, ResourceItem[]> = {
       category: 'Portal',
       mode: 'static',
       summary: 'Advertisements, results, downloads, apply info',
-      prompt: `# PPSC Official Portal\n\n## Aap yahan se kya verify karte hain?\n- New advertisements / jobs\n- Written test schedules\n- Results / final recommendations\n- Downloads (PMS syllabus, past papers, forms)\n\n## Official portal (copy/paste)\n- https://www.ppsc.gop.pk/\n`,
+      prompt: `# PPSC Official Portal\n\n## What can you verify here?\n- New advertisements / jobs\n- Written test schedules\n- Results / final recommendations\n- Downloads (PMS syllabus, past papers, forms)\n\n## Official portal (copy/paste)\n- https://www.ppsc.gop.pk/\n`,
     },
     {
       id: 'ppsc-r-2',
       title: 'PMS Syllabus (Compulsory) – Official Download',
       category: 'Syllabus',
       mode: 'static',
-      summary: 'Punjab PMS compulsory papers ka official syllabus',
-      prompt: `# PMS Syllabus (Compulsory) – Official\n\n## Kya cover hota hai?\nPunjab PMS ke compulsory papers ka detailed syllabus official downloads me hota hai.\n\n## Use kaise karein\n- Har paper ka outline nikal kar topic checklist banayein\n- Past papers se mapping karein: syllabus → repeated questions\n- Weekly revision plan banayein\n\n## Official downloads page (copy/paste)\n- https://ppsc.gop.pk/Downloads.aspx\n`,
+      summary: 'Official syllabus for Punjab PMS compulsory papers',
+      prompt: `# PMS Syllabus (Compulsory) – Official\n\n## What is covered?\nThe official downloads contain the detailed syllabus for Punjab PMS compulsory papers.\n\n## How to use it\n- Turn each paper outline into a topic checklist\n- Map the syllabus to past papers: syllabus → repeated questions\n- Create a weekly revision plan\n\n## Official downloads page (copy/paste)\n- https://ppsc.gop.pk/Downloads.aspx\n`,
     },
     {
       id: 'ppsc-r-3',
       title: 'PMS Syllabus (Optional) – Official Download',
       category: 'Syllabus',
       mode: 'static',
-      summary: 'PMS optional papers ka official syllabus',
-      prompt: `# PMS Syllabus (Optional) – Official\n\n## Notes\nOptional paper selection scoring trends se zyada **candidate strength + background** se match karna chahiye.\n\n## Official downloads page (copy/paste)\n- https://ppsc.gop.pk/Downloads.aspx\n`,
+      summary: 'Official syllabus for PMS optional papers',
+      prompt: `# PMS Syllabus (Optional) – Official\n\n## Notes\nChoose optional papers based on **your strengths and background**, not only on scoring trends.\n\n## Official downloads page (copy/paste)\n- https://ppsc.gop.pk/Downloads.aspx\n`,
     },
     {
       id: 'ppsc-r-4',
       title: 'PMS Optional Subject Groups (Official)',
       category: 'Guide',
       mode: 'static',
-      summary: 'Optional grouping rules aur list (official)',
-      prompt: `# PMS Optional Subject Groups (Official)\n\n## Kya hota hai?\nPunjab PMS me optional subjects group-wise select hotay hain. Official downloads me group list di hoti hai.\n\n## Selection tips\n- Overlap with your background subjects\n- Resource availability + past paper history\n- Time-to-prepare realistically\n\n## Official downloads page (copy/paste)\n- https://ppsc.gop.pk/Downloads.aspx\n`,
+      summary: 'Official optional grouping rules and subject list',
+      prompt: `# PMS Optional Subject Groups (Official)\n\n## What is this?\nIn Punjab PMS, optional subjects are selected group-wise. The official downloads include the group list.\n\n## Selection tips\n- Overlap with your background subjects\n- Resource availability + past paper history\n- Time-to-prepare realistically\n\n## Official downloads page (copy/paste)\n- https://ppsc.gop.pk/Downloads.aspx\n`,
     },
     {
       id: 'ppsc-r-5',
@@ -234,7 +263,7 @@ export const EXAM_RESOURCES: Record<Exam, ResourceItem[]> = {
       category: 'Past Papers',
       mode: 'static',
       summary: 'Year-wise subject-wise PMS papers list',
-      prompt: `# PMS Past Papers (Official)\n\n## Kaise use karein\n- Apne compulsory + optional subjects ke papers choose karein\n- 3–5 years ke papers solve karein\n- Repeated themes aur examiner preference note karein\n\n## Official page (copy/paste)\n- https://www.ppsc.gop.pk/PMSPastPapers.aspx\n`,
+      prompt: `# PMS Past Papers (Official)\n\n## How to use\n- Choose your compulsory + optional subject papers\n- Solve the last 3–5 years papers\n- Note repeated themes and examiner preferences\n\n## Official page (copy/paste)\n- https://www.ppsc.gop.pk/PMSPastPapers.aspx\n`,
     },
     {
       id: 'ppsc-r-6',
@@ -251,8 +280,8 @@ export const EXAM_RESOURCES: Record<Exam, ResourceItem[]> = {
       title: 'PMS Overview (All Provinces) – Quick Guide',
       category: 'Guide',
       mode: 'static',
-      summary: 'Punjab/KP/Sindh/Balochistan portals aur resources',
-      prompt: `# PMS Overview (All Provinces)\n\n## PMS ka concept\nPMS provincial civil services competitive exam hota hai. Rules, papers, aur schedules **province-wise** differ kar sakte hain.\n\n## Province-wise official portals (copy/paste)\n- Punjab (PPSC): https://www.ppsc.gop.pk/\n- KP (KPPSC): https://www.kppsc.gov.pk/\n- Sindh (SPSC): https://spsc.gos.pk/\n- Balochistan (BPSC): http://bpsc.gob.pk/\n\n## Best practice\n- Apne province ka latest advertisement + syllabus verify karein\n- Past papers se syllabus mapping karein\n- Answer writing practice + time allocation routine banayein\n`,
+      summary: 'Punjab/KP/Sindh/Balochistan portals and resources',
+      prompt: `# PMS Overview (All Provinces)\n\n## What is PMS?\nPMS is a provincial civil services competitive exam. Rules, papers, and schedules can differ **by province**.\n\n## Province-wise official portals (copy/paste)\n- Punjab (PPSC): https://www.ppsc.gop.pk/\n- KP (KPPSC): https://www.kppsc.gov.pk/\n- Sindh (SPSC): https://spsc.gos.pk/\n- Balochistan (BPSC): http://bpsc.gob.pk/\n\n## Best practice\n- Verify the latest advertisement + syllabus for your province\n- Map the syllabus to past papers\n- Build an answer-writing + time-allocation routine\n`,
     },
     {
       id: 'pms-r-2',
@@ -276,7 +305,7 @@ export const EXAM_RESOURCES: Record<Exam, ResourceItem[]> = {
       category: 'Past Papers',
       mode: 'static',
       summary: 'PMS 2010/2013/2016/2018/2022 papers listing',
-      prompt: `# KP PMS Previous Papers (Official)\n\nKPPSC website par PMS previous papers year-wise available hotay hain.\n\n## Official page (copy/paste)\n- https://www.kppsc.gov.pk/pms\n- https://www.kppsc.gov.pk/pms/pms_2013\n`,
+      prompt: `# KP PMS Previous Papers (Official)\n\nThe KPPSC website provides PMS previous papers year-wise.\n\n## Official page (copy/paste)\n- https://www.kppsc.gov.pk/pms\n- https://www.kppsc.gov.pk/pms/pms_2013\n`,
     },
   ],
 };
@@ -289,7 +318,9 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'English',
       mode: 'static',
       summary: 'Grammar, usage, comprehension, and writing fundamentals',
-      prompt: `# Exploring the World of English (Saeed Ahmad)\n\n## Best for\n- Precis & composition basics\n- Sentence correction, grammar rules, error spotting\n\n## How to use\n- Daily 30–45 min: one topic + exercises\n- Make an “error notebook” (rules + examples)\n- Weekly 2 comprehension passages + 1 précis\n\n## Outcome\nStrong base for English papers + MCQs/grammar sections.\n`,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9789693502356-L.jpg',
+      author: 'Saeed Ahmad',
+      prompt: `# Exploring the World of English (Saeed Ahmad)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9789693502356-L.jpg)\n\n## Best for\n- Precis & composition basics\n- Sentence correction, grammar rules, error spotting\n\n## How to use\n- Daily 30–45 min: one topic + exercises\n- Make an “error notebook” (rules + examples)\n- Weekly 2 comprehension passages + 1 précis\n\n## Outcome\nStrong base for English papers + MCQs/grammar sections.\n`,
     },
     {
       id: 'css-b-2',
@@ -297,7 +328,9 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'English',
       mode: 'static',
       summary: 'Classic grammar drills for accuracy and sentence control',
-      prompt: `# Wren & Martin (Grammar & Composition)\n\n## Best for\n- Grammar accuracy and sentence structure\n- Common error patterns\n\n## How to use\n- Focus on rules + selected exercises (don’t try to finish everything)\n- Pair with daily writing practice: 150–250 words\n\n## Tip\nWrite your own examples for every rule you learn.\n`,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9788121900096-L.jpg',
+      author: 'P. C. Wren, H. Martin',
+      prompt: `# Wren & Martin (Grammar & Composition)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9788121900096-L.jpg)\n\n## Best for\n- Grammar accuracy and sentence structure\n- Common error patterns\n\n## How to use\n- Focus on rules + selected exercises (don’t try to finish everything)\n- Pair with daily writing practice: 150–250 words\n\n## Tip\nWrite your own examples for every rule you learn.\n`,
     },
     {
       id: 'css-b-3',
@@ -305,7 +338,8 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'General Knowledge',
       mode: 'static',
       summary: 'Quick coverage for GK/PA concepts + facts (revise-friendly)',
-      prompt: `# Caravan (GK / Pakistan Affairs)\n\n## Best for\n- Quick revision + facts consolidation\n- MCQs support\n\n## How to use\n- Build your own one-page sheets: dates, maps, institutions\n- After each chapter: 30–50 MCQs practice\n\n## Tip\nAlways update stats with latest Economic Survey / SBP.\n`,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9789695741661-L.jpg',
+      prompt: `# Caravan (GK / Pakistan Affairs)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9789695741661-L.jpg)\n\n## Best for\n- Quick revision + facts consolidation\n- MCQs support\n\n## How to use\n- Build your own one-page sheets: dates, maps, institutions\n- After each chapter: 30–50 MCQs practice\n\n## Tip\nAlways update stats with latest Economic Survey / SBP.\n`,
     },
     {
       id: 'css-b-4',
@@ -313,7 +347,9 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Pakistan Affairs',
       mode: 'static',
       summary: 'Structured Pakistan Affairs coverage with historical continuity',
-      prompt: `# Pakistan Affairs (Ikram Rabbani)\n\n## Best for\n- Background + timeline clarity\n- Constitutional and political evolution basics\n\n## How to use\n- Make “timeline + causes + impacts” tables\n- Link every topic with current affairs examples\n\n## Tip\nAnswers me headings + subheadings + map/diagram add karein.\n`,
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9789690005324-L.jpg',
+      author: 'Ikram Rabbani',
+      prompt: `# Pakistan Affairs (Ikram Rabbani)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9789690005324-L.jpg)\n\n## Best for\n- Background + timeline clarity\n- Constitutional and political evolution basics\n\n## How to use\n- Make “timeline + causes + impacts” tables\n- Link every topic with current affairs examples\n\n## Tip\nAdd headings, subheadings, and maps/diagrams to your answers.\n`,
     },
     {
       id: 'css-b-5',
@@ -321,7 +357,8 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Current Affairs',
       mode: 'static',
       summary: 'Updated issues, global events, Pakistan policy debates',
-      prompt: `# Current Affairs (JWT Monthly + Annual)\n\n## Best for\n- Updated arguments, case studies, figures\n- Essay/CA answer enrichment\n\n## How to use\n- Monthly: 6–8 key issues pick karein\n- Har issue ka 1-page brief: background → stakeholders → options → way forward\n\n## Tip\nUse credible sources: SBP, PBS, UN, World Bank, IMF.\n`,
+      imageUrl: 'https://placehold.co/600x900/png?text=JWT+Current+Affairs',
+      prompt: `# Current Affairs (JWT Monthly + Annual)\n\n![Cover](https://placehold.co/600x900/png?text=JWT+Current+Affairs)\n\n## Best for\n- Updated arguments, case studies, figures\n- Essay/CA answer enrichment\n\n## How to use\n- Monthly: pick 6–8 key issues\n- Write a 1-page brief per issue: background → stakeholders → options → way forward\n\n## Tip\nUse credible sources: SBP, PBS, UN, World Bank, IMF.\n`,
     },
     {
       id: 'css-b-6',
@@ -329,7 +366,8 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Islamiat',
       mode: 'static',
       summary: 'Conceptual Islamiat coverage + modern issues linkage',
-      prompt: `# Islamiat (Conceptual)\n\n## Best for\n- Core concepts + contemporary application\n- Structured answer writing\n\n## How to use\n- Topics: belief, ibadah, social system, governance, economy\n- Add Quran/Hadith references where needed (short + relevant)\n\n## Tip\nModern issues: human rights, women rights, extremism, economy, environment.\n`,
+      imageUrl: 'https://placehold.co/600x900/png?text=Islamiat',
+      prompt: `# Islamiat (Conceptual)\n\n![Cover](https://placehold.co/600x900/png?text=Islamiat)\n\n## Best for\n- Core concepts + contemporary application\n- Structured answer writing\n\n## How to use\n- Topics: belief, ibadah, social system, governance, economy\n- Add Quran/Hadith references where needed (short + relevant)\n\n## Tip\nModern issues: human rights, women rights, extremism, economy, environment.\n`,
     },
     {
       id: 'css-b-7',
@@ -337,7 +375,58 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Everyday Science',
       mode: 'static',
       summary: 'General science fundamentals for MCQs + short questions',
-      prompt: `# Everyday Science (EDS)\n\n## Best for\n- Basic physics/chemistry/biology\n- Common science MCQs\n\n## How to use\n- Build “definitions + examples” notes\n- Practice MCQs daily (20–30)\n\n## Tip\nFocus on concepts; avoid memorizing without understanding.\n`,
+      imageUrl: 'https://placehold.co/600x900/png?text=Everyday+Science',
+      prompt: `# Everyday Science (EDS)\n\n![Cover](https://placehold.co/600x900/png?text=Everyday+Science)\n\n## Best for\n- Basic physics/chemistry/biology\n- Common science MCQs\n\n## How to use\n- Build “definitions + examples” notes\n- Practice MCQs daily (20–30)\n\n## Tip\nFocus on concepts; avoid memorizing without understanding.\n`,
+    },
+    {
+      id: 'css-b-8',
+      title: 'Global Politics (Andrew Heywood)',
+      category: 'International Relations',
+      mode: 'static',
+      summary: 'Covers IR concepts and issues in an exam-friendly structure',
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9781137604454-L.jpg',
+      author: 'Andrew Heywood',
+      prompt: `# Global Politics (Andrew Heywood)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9781137604454-L.jpg)\n\n## Best for\n- IR basics: theories, actors, institutions\n- Major themes: security, power, globalization\n\n## CSS approach\n- From each chapter, create one “issue brief”: definition → debate → examples → Pakistan linkage\n- Diagrams: levels of analysis, balance of power, security dilemma\n\n## Output\nBetter conceptual answers + headings + examples.\n`,
+    },
+    {
+      id: 'css-b-9',
+      title: 'Diplomacy (Henry Kissinger)',
+      category: 'Foreign Affairs',
+      mode: 'static',
+      summary: 'Historical evolution of diplomacy and global order (example-rich)',
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780671510992-L.jpg',
+      author: 'Henry Kissinger',
+      prompt: `# Diplomacy (Henry Kissinger)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9780671510992-L.jpg)\n\n## Best for\n- Foreign policy evolution and case studies\n- Great powers, alliances, negotiation patterns\n\n## CSS approach\n- Selected chapters: Europe balance, Cold War, post-Cold War order\n- Write each case as: “Lesson + relevance for Pakistan”\n\n## Tip\nUse this as “core reading + notes”; focus on arguments, not rote memorization.\n`,
+    },
+    {
+      id: 'css-b-10',
+      title: 'Political Ideologies: An Introduction (Andrew Heywood)',
+      category: 'Political Science',
+      mode: 'static',
+      summary: 'Clear comparative framework for ideologies (CSS optional-friendly)',
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9781137606045-L.jpg',
+      author: 'Andrew Heywood',
+      prompt: `# Political Ideologies (Andrew Heywood)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9781137606045-L.jpg)\n\n## Best for\n- Liberalism, conservatism, socialism, feminism, nationalism\n- Comparison tables for quick revision\n\n## CSS approach\n- Use a template per ideology: core values → thinkers → critiques → contemporary examples\n- Answer writing: headings + 1-2 thinkers + examples\n\n## Output\nScoring answers because structure is naturally comparative.\n`,
+    },
+    {
+      id: 'css-b-11',
+      title: 'Feminism Is for Everybody (bell hooks)',
+      category: 'Gender Studies',
+      mode: 'static',
+      summary: 'Accessible conceptual base and terminology for Gender Studies',
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780896086286-L.jpg',
+      author: 'bell hooks',
+      prompt: `# Feminism Is for Everybody (bell hooks)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9780896086286-L.jpg)\n\n## Best for\n- Gender basics: patriarchy, equality, intersectionality (foundation level)\n- Conceptual clarity for debate-oriented answers\n\n## CSS approach\n- Create a glossary of key terms (1–2 lines each)\n- Add Pakistan context examples: education, labor, laws, representation\n\n## Output\nConceptual answers + balanced “way forward”.\n`,
+    },
+    {
+      id: 'css-b-12',
+      title: 'The Tragedy of Great Power Politics (John J. Mearsheimer)',
+      category: 'International Relations',
+      mode: 'static',
+      summary: 'Realism, power competition, and case studies for IR answers',
+      imageUrl: 'https://covers.openlibrary.org/b/isbn/9780393020259-L.jpg',
+      author: 'John J. Mearsheimer',
+      prompt: `# The Tragedy of Great Power Politics (Mearsheimer)\n\n![Cover](https://covers.openlibrary.org/b/isbn/9780393020259-L.jpg)\n\n## Best for\n- A strong framework for offensive realism\n- Great power competition (US-China, alliances, strategy)\n\n## CSS approach\n- Make 1-page notes from the theory section\n- Link case studies with current affairs (Indo-Pacific, BRI, NATO)\n\n## Tip\nKeep this as “selected reading”; balance with Heywood/standard IR texts.\n`,
     },
   ],
   FPSC: [
@@ -347,6 +436,7 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Screening',
       mode: 'static',
       summary: 'Generic screening test coverage for many FPSC posts',
+      imageUrl: 'https://placehold.co/600x900/png?text=FPSC+Screening',
       prompt: `# FPSC GR (Dogar/Caravan) – Screening Pack\n\n## Best for\n- English + GK + IQ/Quant basics\n- Quick practice MCQs\n\n## How to use\n- Match your advertisement syllabus first\n- Daily routine: 40% MCQs + 60% weak areas\n\n## Tip\nPost-specific subject knowledge is still critical; this is only the base.\n`,
     },
     {
@@ -355,6 +445,7 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'English',
       mode: 'static',
       summary: 'English accuracy + vocabulary build for screening',
+      imageUrl: 'https://placehold.co/600x900/png?text=English+Stack',
       prompt: `# English for FPSC Screening\n\n## Stack\n- Wren & Martin (core grammar)\n- High-frequency vocabulary list (daily)\n\n## Daily plan (30–40 min)\n- 10–15 words + revision\n- 10 sentence correction questions\n- 1 short passage comprehension\n`,
     },
     {
@@ -363,7 +454,8 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Quant',
       mode: 'static',
       summary: 'Percentages, ratios, averages, time & work, series',
-      prompt: `# Quant for FPSC\n\n## Best for\n- Arithmetic speed + accuracy\n\n## Must-cover topics\n- Percentages, ratios, averages\n- Time & work, time & distance\n- Series, basic algebra\n\n## Tip\nTimed sets solve karein (15–20 questions / 20 minutes).\n`,
+      imageUrl: 'https://placehold.co/600x900/png?text=Quant+Basics',
+      prompt: `# Quant for FPSC\n\n## Best for\n- Arithmetic speed + accuracy\n\n## Must-cover topics\n- Percentages, ratios, averages\n- Time & work, time & distance\n- Series, basic algebra\n\n## Tip\nSolve timed sets (15–20 questions / 20 minutes).\n`,
     },
   ],
   PPSC: [
@@ -373,6 +465,7 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'One Paper',
       mode: 'static',
       summary: 'GK, Pakistan Studies, Islamiyat, English, Maths basics',
+      imageUrl: 'https://placehold.co/600x900/png?text=PPSC+One+Paper',
       prompt: `# PPSC One-Paper Preparation Book\n\n## Best for\n- General screening pattern posts\n- Quick revision + MCQs\n\n## How to use\n- Always align with your advertisement syllabus\n- Make short notes for repeated MCQ themes\n\n## Tip\nPast papers for your exact post are the best predictor.\n`,
     },
     {
@@ -381,6 +474,7 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Core',
       mode: 'static',
       summary: 'Conceptual grip for recurring areas in PPSC tests',
+      imageUrl: 'https://placehold.co/600x900/png?text=Pak+Studies',
       prompt: `# Pakistan Studies + Islamiat (PPSC)\n\n## Focus areas\n- Constitution, institutions, important events\n- Islamic concepts + modern issues\n\n## Strategy\n- Concept → 30–50 MCQs practice\n- Revise frequently (spaced repetition)\n`,
     },
     {
@@ -389,6 +483,7 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'English',
       mode: 'static',
       summary: 'Sentence correction, synonyms/antonyms, comprehension',
+      imageUrl: 'https://placehold.co/600x900/png?text=English',
       prompt: `# English for PPSC\n\n## Daily\n- 10 vocab words\n- 10 grammar questions\n- 1 passage comprehension\n\n## Tip\nMake your own “confusing words” list.\n`,
     },
   ],
@@ -399,15 +494,17 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Compulsory',
       mode: 'static',
       summary: 'Essay, English, Urdu, Islamiat/Ethics, Pak Studies, GK',
-      prompt: `# PMS Compulsory Papers – Prep Guides\n\n## Best for\n- Paper-wise structure and past paper trends\n\n## How to use\n- Past papers mapping: topic → repeated questions\n- Weekly answer writing practice\n\n## Tip\nCompulsory papers me presentation matters: headings, flow, examples.\n`,
+      imageUrl: 'https://placehold.co/600x900/png?text=PMS+Compulsory',
+      prompt: `# PMS Compulsory Papers – Prep Guides\n\n## Best for\n- Paper-wise structure and past paper trends\n\n## How to use\n- Past papers mapping: topic → repeated questions\n- Weekly answer writing practice\n\n## Tip\nPresentation matters in compulsory papers: headings, flow, examples.\n`,
     },
     {
       id: 'pms-b-2',
       title: 'PMS Optional Subject (Standard university text per subject)',
       category: 'Optional',
       mode: 'static',
-      summary: 'Optional me core textbooks + notes combo',
-      prompt: `# PMS Optional Subjects – Book Selection\n\n## Rule\nOptional ko “guide” se nahi, **standard textbooks** se build karein.\n\n## Selection framework\n- Background match\n- Resource availability\n- Time-to-prepare\n\n## Tip\nOne core book + one revision guide + past papers.\n`,
+      summary: 'Core textbooks + notes combo for optional subjects',
+      imageUrl: 'https://placehold.co/600x900/png?text=PMS+Optional',
+      prompt: `# PMS Optional Subjects – Book Selection\n\n## Rule\nBuild your optional preparation from **standard textbooks**, not only from guidebooks.\n\n## Selection framework\n- Background match\n- Resource availability\n- Time-to-prepare\n\n## Tip\nOne core book + one revision guide + past papers.\n`,
     },
     {
       id: 'pms-b-3',
@@ -415,6 +512,7 @@ export const EXAM_BOOKS: Record<Exam, ResourceItem[]> = {
       category: 'Current Affairs',
       mode: 'static',
       summary: 'Updated arguments + facts for essay/CA papers',
+      imageUrl: 'https://placehold.co/600x900/png?text=Current+Affairs',
       prompt: `# PMS Current Affairs Stack\n\n## Must sources\n- JWT Monthly/Annual\n- Economic Survey, SBP, UN reports\n\n## Output\n- 1-page issue briefs + “way forward” points\n`,
     },
   ],

@@ -43,8 +43,13 @@ const Sidebar: React.FC<SidebarProps> = ({
   streak,
 }) => {
   const { t } = useLanguage();
+  const { profile } = useAuth();
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDesktop, setIsDesktop] = useState(typeof window !== 'undefined' ? window.innerWidth >= 768 : false);
+  const hasPremium =
+    profile?.plan_status === 'active' &&
+    profile?.plan_id === 'premium' &&
+    (!profile?.plan_expires_at || new Date(profile.plan_expires_at).getTime() > Date.now());
 
   // Device detection and sidebar state management
   useEffect(() => {
@@ -454,24 +459,27 @@ const Sidebar: React.FC<SidebarProps> = ({
           <NavItem viewState="STREAKS" icon={FireIcon} label="Streaks" />
           <NavItem viewState="NEWS_EVENTS" icon={BellIcon} label="News & Events" isNew />
           <NavItem viewState="NOTE_LIST" icon={NoteIcon} label={t("myNotes")} />
+          {!hasPremium && <NavItem viewState="PRICING" icon={SparklesIcon} label="Upgrade / Pricing" />}
         </div>
 
         {/* AI Tools */}
-        <div className="space-y-1">
-          {!isCollapsed && (
-            <motion.p 
-              initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-              className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-3 mb-2 flex items-center gap-2"
-            >
-              <SparklesIcon className="w-3 h-3 text-purple-400" /> AI Tools
-            </motion.p>
-          )}
-          {isCollapsed && <div className="h-px bg-gray-800 my-2 mx-2"></div>}
-          <NavItem viewState="AI_SUMMARIZER" icon={SparklesIcon} label="AI Summarizer" />
-          <NavItem viewState="FLASHCARDS" icon={TrophyIcon} label="AI Flashcards" />
-          <NavItem viewState="AI_LECTURE_NOTES" icon={NoteIcon} label="AI Lecture Notes" isNew />
-          <NavItem viewState="AI_MIND_MAP" icon={SparklesIcon} label="Mind Map" />
-        </div>
+        {hasPremium && (
+          <div className="space-y-1">
+            {!isCollapsed && (
+              <motion.p 
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }}
+                className="text-[10px] font-bold text-gray-500 uppercase tracking-widest px-3 mb-2 flex items-center gap-2"
+              >
+                <SparklesIcon className="w-3 h-3 text-purple-400" /> AI Tools
+              </motion.p>
+            )}
+            {isCollapsed && <div className="h-px bg-gray-800 my-2 mx-2"></div>}
+            <NavItem viewState="AI_SUMMARIZER" icon={SparklesIcon} label="AI Summarizer" />
+            <NavItem viewState="FLASHCARDS" icon={TrophyIcon} label="AI Flashcards" />
+            <NavItem viewState="AI_LECTURE_NOTES" icon={NoteIcon} label="AI Lecture Notes" isNew />
+            <NavItem viewState="AI_MIND_MAP" icon={SparklesIcon} label="Mind Map" />
+          </div>
+        )}
 
         {/* Resources */}
         <div className="space-y-1">
